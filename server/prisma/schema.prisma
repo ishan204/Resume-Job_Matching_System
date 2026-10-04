@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(uuid())
+  email           String           @unique
+  name            String
+  plan            String           @default("PRO")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  resumes         Resume[]
+  jobs            JobDescription[]
+  applications    Application[]
+  activities      ActivityLog[]
+}
+
+model Resume {
+  id              String           @id @default(uuid())
+  userId          String
+  title           String
+  fileName        String
+  fileType        String
+  fileSize        Int
+  rawText         String
+  parsedData      String           // JSON string of ParsedResumeData
+  atsAnalysis     String           // JSON string of AtsAnalysis
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches         MatchAnalysis[]
+  applications    Application[]
+}
+
+model JobDescription {
+  id              String           @id @default(uuid())
+  userId          String
+  title           String
+  company         String
+  location        String           @default("Remote")
+  employmentType  String           @default("Full-time")
+  salaryRange     String?
+  rawText         String
+  parsedData      String           // JSON string of ParsedJobData
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches         MatchAnalysis[]
+  applications    Application[]
+}
+
+model MatchAnalysis {
+  id                   String            @id @default(uuid())
+  resumeId             String
+  jobId                String
+  overallScore         Float
+  scoreBreakdown       String            // JSON string of ScoreBreakdown
+  skillMatrix          String            // JSON string of skill matrix
+  experienceComparison String            // JSON string of experience comparison
+  strengths            String            // JSON string array
+  gaps                 String            // JSON string array
+  actionableAdvice     String            // JSON string array of ActionableAdvice
+  createdAt            DateTime          @default(now())
+
+  resume               Resume            @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  job                  JobDescription    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  optimizedResumes     OptimizedResume[]
+}
+
+model OptimizedResume {
+  id                      String         @id @default(uuid())
+  matchAnalysisId         String
+  resumeId                String
+  targetJobId             String
+  tailoredSummary         String
+  optimizedBullets        String         // JSON string of BulletOptimization[]
+  suggestedSkillAdditions String         // JSON string array
+  fullOptimizedText       String
+  createdAt               DateTime       @default(now())
+
+  matchAnalysis           MatchAnalysis  @relation(fields: [matchAnalysisId], references: [id], onDelete: Cascade)
+}
+
+model CoverLetter {
+  id                      String         @id @default(uuid())
+  resumeId                String
+  jobId                   String
+  company                 String
+  role                    String
+  tone                    String         @default("professional")
+  recipient               String         @default("Hiring Team")
+  opening                 String
+  bodyParagraphs          String         // JSON string array
+  closing                 String
+  fullLetter              String
+  highlightedAchievements String         // JSON string array
+  createdAt               DateTime       @default(now())
+}
+
+model Application {
+  id              String           @id @default(uuid())
+  userId          String
+  resumeId        String?
+  jobId           String?
+  company         String
+  position        String
+  location        String           @default("Remote")
+  salary          String?
+  status          String           @default("saved") // saved, applied, screening, interviewing, offer, rejected
+  appliedDate     String?
+  matchScore      Float?
+  notes           String           @default("")
+  nextActionDate  String?
+  timeline        String           @default("[]") // JSON string of ApplicationTimelineEvent[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume          Resume?          @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  job             JobDescription?  @relation(fields: [jobId], references: [id], onDelete: SetNull)
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String
+  title       String
+  metadata    String?  // JSON string
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
