@@ -1,6 +1,13 @@
 {
-  "files_scanned": 27,
+  "files_scanned": 47,
   "findings": [],
-  "images_for_manual_review": [],
+  "images_for_manual_review": [
+    "results\\figures\\hybrid_ablation_ndcg10.png",
+    "results\\figures\\macro_f1_by_model.png",
+    "results\\figures\\mrr_by_model.png",
+    "results\\figures\\ndcg10_by_model.png",
+    "results\\figures\\repeated_ndcg10_distribution.png",
+    "results\\figures\\repeated_paired_differences.png"
+  ],
   "passed": true
 }

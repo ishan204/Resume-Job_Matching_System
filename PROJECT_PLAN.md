@@ -81,6 +81,11 @@ required skills 0.15, preferred 0.05, experience 0.10, responsibilities 0.10; se
 from 6 pre-declared weightings). Test: NDCG@10 0.8459, MRR 0.8341 — best of all models, hybrid − BGE
 bootstrap CIs exclude 0. **Not replicated on validation** (hybrid − BGE NDCG@10 −0.003, CI spans 0).
 Verdict: promising, not conclusive; repeated grouped splits needed (Phase 10).
+
+**Phase 6 outcome (see docs/evaluation.md):** parser fix for glued requirement cues (general rule,
+negligible effect; Phase 5 results preserved). 5 repeated grouped splits with per-split re-selection:
+hybrid > BGE in 5/5 splits, NDCG@10 +0.010 [+0.002, +0.019]; small but consistent ranking gain;
+classification gain not robust. Explanations verified faithful on all 1,191 test pairs; privacy PASS.
 - **Leakage check:** `ml/evaluation/leakage_check.py` asserts pairwise-empty resume-ID
   intersections across train/val/test and reports all counts.
 - **Ranking groups:** a ranking query = one `job_id` with all its candidate resumes in that split.
@@ -140,7 +145,7 @@ If the hybrid loses, we report it and analyse why.
 | 3 ✅ | TF-IDF baseline | TF-IDF baseline |
 | 4 ✅ | BGE semantic baseline | semantic baseline |
 | 5 ✅ | Parsers, skills/experience/education features, hybrid | hybrid model |
-| 6 | Metrics + evaluation engine | evaluation framework |
+| 6 ✅ | Final evaluation, robustness (repeated grouped splits), statistics, error analysis | evaluation |
 | 7 | Weight + ablation experiments (validation) | experiments |
 | 8 | FastAPI backend | backend API |
 | 9 | Functional React frontend | frontend |

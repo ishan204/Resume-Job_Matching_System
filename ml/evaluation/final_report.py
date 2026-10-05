@@ -22,6 +22,7 @@ LABELS = {"random": "Random", "tfidf": "TF-IDF", "semantic": "BGE semantic",
 COLOR = {"tfidf": "#2a78d6", "semantic": "#eb6834", "hybrid": "#1baf7a", "hybrid_parserfix": "#1baf7a"}
 INK, MUTED, GRID, AXIS, SURFACE = "#0b0b0b", "#52514e", "#e1e0d9", "#c3c2b7", "#fcfcfb"
 FIG = RESULTS_DIR / "figures"
+PRETTY = {"ndcg@10": "NDCG@10", "mrr": "MRR", "macro_f1": "Macro F1"}
 
 
 def metrics(config: str, split: str) -> dict | None:
@@ -90,9 +91,9 @@ def _bars(ax, names, values, errors=None, ref=None, ref_label=None, ylim=None):
         top = v + (errors[i] if errors is not None else 0)
         ax.text(i, top + 0.004, f"{v:.3f}", ha="center", va="bottom", fontsize=9, color=INK)
     ax.set_xticks(list(x), [LABELS[n] for n in names])
+    ax.set_xlim(-0.5, len(names) - 0.5)
     if ref is not None:
         ax.axhline(ref, color=MUTED, linestyle="--", linewidth=1)
-        ax.text(len(names) - 0.5, ref, f" {ref_label} {ref:.3f}", va="bottom", ha="right", fontsize=8, color=MUTED)
     if ylim:
         ax.set_ylim(*ylim)
 
@@ -103,12 +104,14 @@ def metric_figure(table: pd.DataFrame, metric: str, title: str, fname: str, ylim
     has_ref = f"test_{metric}" in table.columns and pd.notna(table.loc["random"].get(f"test_{metric}"))
     _bars(axes[0], orig, table.loc[orig, f"test_{metric}"].tolist(),
           ref=table.loc["random", f"test_{metric}"] if has_ref else None, ref_label="random", ylim=ylim)
-    _style(axes[0], "Original held-out test split (157 rankable jobs)", metric.upper().replace("NDCG", "NDCG"))
+    ref0 = f"\ndashed line = random {table.loc['random', f'test_{metric}']:.3f}" if has_ref else ""
+    _style(axes[0], f"Original held-out test split (157 rankable jobs){ref0}", PRETTY[metric])
     rep = ["tfidf", "semantic", "hybrid_parserfix"]
     _bars(axes[1], rep, table.loc[rep, f"repeated_mean_{metric}"].tolist(),
           errors=table.loc[rep, f"repeated_std_{metric}"].tolist(),
           ref=table.loc["random", f"repeated_mean_{metric}"] if has_ref else None, ref_label="random", ylim=ylim)
-    _style(axes[1], "5 repeated grouped splits: mean ± SD", "")
+    ref1 = f"\ndashed line = random {table.loc['random', f'repeated_mean_{metric}']:.3f}" if has_ref else ""
+    _style(axes[1], f"5 repeated grouped splits: mean ± SD{ref1}", "")
     fig.suptitle(title, x=0.01, ha="left", color=INK, fontsize=12)
     fig.tight_layout()
     fig.savefig(FIG / fname, dpi=150, facecolor=SURFACE)
@@ -125,9 +128,10 @@ def ablation_figure(ab: pd.DataFrame):
         errs = ab[err].tolist() if err else None
         ax.bar(range(6), vals, width=0.6, color=COLOR["tfidf"], yerr=errs, edgecolor=SURFACE, linewidth=2,
                error_kw={"ecolor": INK, "elinewidth": 1, "capsize": 3})
-        ax.axhline(vals[0], color=MUTED, linestyle="--", linewidth=1)  # semantic-only reference
+        ax.axhline(vals[0], color=MUTED, linestyle="--", linewidth=1, zorder=0)  # semantic-only reference
         for i, v in enumerate(vals):
-            ax.text(i, v + (errs[i] if errs else 0) + 0.002, f"{v:.3f}", ha="center", va="bottom", fontsize=8, color=INK)
+            ax.text(i, v + (errs[i] if errs else 0) + 0.002, f"{v:.3f}", ha="center", va="bottom", fontsize=8,
+                    color=INK, bbox={"facecolor": SURFACE, "edgecolor": "none", "pad": 1})
         ax.set_xticks(range(6), short)
         ax.set_ylim(0.76, 0.87)
         _style(ax, title, "NDCG@10" if ax is axes[0] else "")
@@ -162,7 +166,7 @@ def repeated_distribution_figure():
 def differences_figure():
     d = pd.read_csv(RESULTS_DIR / "repeated_grouped_differences.csv")
     d = d[d.metric.isin(["ndcg@10", "mrr"])].reset_index(drop=True)
-    fig, ax = plt.subplots(figsize=(8, 4), facecolor=SURFACE)
+    fig, ax = plt.subplots(figsize=(10, 4), facecolor=SURFACE)
     y = list(range(len(d)))[::-1]
     for yi, r in zip(y, d.itertuples()):
         ax.plot([r.ci95_low, r.ci95_high], [yi, yi], color=INK, linewidth=1.5)
@@ -171,8 +175,11 @@ def differences_figure():
                 f"{r.reps_positive}/{r.n_repetitions} splits > 0", va="center", fontsize=8, color=INK)
     ax.axvline(0, color=MUTED, linewidth=1)
     ax.set_yticks(y, [f"{r.comparison}  ({r.metric.upper()})" for r in d.itertuples()])
-    ax.set_xlim(min(d.ci95_low.min(), 0) - 0.01, d.ci95_high.max() + 0.09)
-    _style(ax, "Paired differences across 5 repeated splits: mean and 95% job-bootstrap CI", "")
+    ax.set_xlim(min(d.ci95_low.min(), 0) - 0.01, d.ci95_high.max() + 0.07)
+    _style(ax, "", "")
+    ax.set_xlabel("difference in metric (model A - model B); 0 = no difference", color=MUTED, fontsize=9)
+    fig.suptitle("Paired differences, 5 repeated grouped splits: mean and 95% job-bootstrap CI",
+                 x=0.01, ha="left", color=INK, fontsize=12)
     ax.grid(axis="x", color=GRID, linewidth=0.8)
     ax.grid(axis="y", visible=False)
     fig.tight_layout()

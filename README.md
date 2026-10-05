@@ -65,6 +65,7 @@ python -m ml.evaluation.significance tfidf semantic hybrid
 | 3 TF-IDF baseline | done — test NDCG@10 0.7945, MRR 0.7638, macro F1 0.3938 (see [docs/algorithms.md](docs/algorithms.md)) |
 | 4 Semantic baseline (BGE) | done — test NDCG@10 0.8231, MRR 0.7870, macro F1 0.4226 |
 | 5 Skill-Aware Hybrid (student innovation) | done — test NDCG@10 0.8459, MRR 0.8341, macro F1 0.4386; gain over BGE significant on test but not replicated on validation |
-| 6–13 | pending |
+| 6 Evaluation & robustness | done — across 5 repeated grouped splits hybrid > BGE in 5/5 (NDCG@10 +0.010, 95% CI [+0.002, +0.019]); see [docs/evaluation.md](docs/evaluation.md) |
+| 7–13 | pending |
 
 Results are added here only after experiments are actually run.

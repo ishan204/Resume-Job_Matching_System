@@ -63,13 +63,18 @@ and MAP.
 (NDCG@10 0.8085 vs 0.8114; bootstrap CI for the difference [−0.018, +0.012]). In the validation
 ablation, adding each explicit feature to semantic similarity did not improve NDCG@10.
 
-**Verdict on H0 vs H1.** On the held-out test split, H1 is supported: the improvement over pure
-semantic matching is statistically significant. That improvement did **not** replicate on the
-equally sized validation split. The per-feature analysis shows that how informative each feature
-is changes a lot between two samples of about 96 resumes. Our honest conclusion: **the evidence that
-the hybrid beats pure semantic matching is promising but not conclusive.** Classification
-(macro F1, accuracy) improved on both splits. Confirming the ranking gain needs repeated grouped
-splits (cross-validation), planned for the final experiments.
+**Robustness check (Phase 6).** The whole method was re-run on 5 further resume-grouped splits
+with disjoint test sets, re-selecting the weights on each split's own validation data. The hybrid
+ranked better than BGE in **5 of 5** splits: mean NDCG@10 +0.010, job-bootstrap 95% CI
+[+0.002, +0.019]. MRR, MAP and NDCG@5 behave the same way. The gain is real but **small**, less
+than half of the original test estimate. Across splits the hybrid's mean macro F1 (0.406) was
+slightly *below* BGE's (0.412).
+
+**Verdict on H0 vs H1.** For ranking, H1 is supported: the hybrid beats pure semantic matching
+consistently across independent grouped splits. The effect size is modest, and it did not appear on
+the original validation split. Required-skill coverage does not improve ranking in any analysis, so
+its contribution is to **explainability** rather than accuracy. For classification, H0 cannot be
+rejected. See [evaluation.md](evaluation.md) for the full analysis.
 
 ## Explainability
 
