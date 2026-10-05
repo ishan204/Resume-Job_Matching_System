@@ -25,7 +25,8 @@ Research inspiration: [ConFit v2](https://github.com/jasonyux/ConFit-v2) — a r
 │   ├── parsing/               # resume + JD parsers (PDF/DOCX/TXT)   (Phase 5)
 │   ├── features/              # skills, experience, education, feature vector
 │   ├── models/                # tfidf.py, semantic.py, hybrid.py     (Phases 3–5)
-│   └── evaluation/            # metrics, leakage_check, run experiments (Phases 2, 6–7)
+│   └── evaluation/            # metrics, leakage_check, experiment protocol (Phases 2–3, 6–7)
+├── artifacts/                 # fitted models, e.g. tfidf.joblib (git-ignored)
 ├── backend/                   # FastAPI app                            (Phase 8)
 ├── frontend/                  # React + TypeScript + Tailwind + Recharts (Phase 9)
 ├── experiments/config/        # frozen config of every experiment run
@@ -66,6 +67,9 @@ No external LLM is used anywhere.
 - **Phase 2 outcome (see docs/dataset.md):** 7,987 pairs from only 643 resumes / 351 jobs;
   the original HF split leaks 476 of 477 test resumes into train, so it is discarded.
   Grouped split: 5,537 / 1,259 / 1,191 rows; leakage check PASS; reproducibility PASS.
+
+**Phase 3 outcome (see docs/algorithms.md):** TF-IDF test NDCG@10 0.7945 vs 0.7582 for random
+ordering, MRR 0.7638 vs 0.7141; macro F1 0.3938 (always-No-Fit 0.2349). Weak but real lexical signal.
 - **Leakage check:** `ml/evaluation/leakage_check.py` asserts pairwise-empty resume-ID
   intersections across train/val/test and reports all counts.
 - **Ranking groups:** a ranking query = one `job_id` with all its candidate resumes in that split.
@@ -105,7 +109,9 @@ If the hybrid loses, we report it and analyse why.
 
 - Same frozen test split and same ranking groups for every model.
 - **Ranking (primary):** NDCG@5, NDCG@10, MRR, MAP, P@1, P@5 (graded gain: No=0, Potential=1, Good=2;
-  "relevant" for MRR/MAP/P@k = Good Fit).
+  "relevant" for MRR/MAP/P@k = label > 0, i.e. Potential or Good Fit). Every metrics file also
+  records chance-level references (seeded random ordering, always-No-Fit). Shared protocol:
+  `ml/evaluation/experiment.py`; metrics: `ml/evaluation/metrics.py`.
 - **Classification (secondary):** each model's score → 3 classes via two thresholds chosen on
   validation; Accuracy, macro Precision/Recall/F1, confusion matrix per model.
 - **Ablation (A–F):** semantic → +required → +preferred → +experience → +responsibilities → final.
@@ -120,7 +126,7 @@ If the hybrid loses, we report it and analyse why.
 |---|---|---|
 | 1 ✅ | Repo, architecture, environment, docs skeleton | project initialization |
 | 2 ✅ | Dataset pipeline, leakage check, grouped split | dataset pipeline |
-| 3 | TF-IDF baseline | TF-IDF baseline |
+| 3 ✅ | TF-IDF baseline | TF-IDF baseline |
 | 4 | BGE semantic baseline | semantic baseline |
 | 5 | Parsers, skills/experience/education features, hybrid | hybrid model |
 | 6 | Metrics + evaluation engine | evaluation framework |

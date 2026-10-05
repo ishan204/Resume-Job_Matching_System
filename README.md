@@ -31,12 +31,19 @@ python -m ml.dataset.split
 python -m ml.evaluation.leakage_check
 ```
 
+Run the TF-IDF baseline (fits on train, thresholds on validation, scores test once):
+
+```bash
+python -m ml.evaluation.experiment tfidf
+```
+
 ## Status
 
 | Phase | Status |
 |---|---|
 | 1 Project initialization | done |
 | 2 Dataset pipeline (leakage check PASS) | done — see [docs/dataset.md](docs/dataset.md) |
-| 3–13 | pending |
+| 3 TF-IDF baseline | done — test NDCG@10 0.7945, MRR 0.7638, macro F1 0.3938 (see [docs/algorithms.md](docs/algorithms.md)) |
+| 4–13 | pending |
 
 Results are added here only after experiments are actually run.
