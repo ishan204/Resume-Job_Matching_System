@@ -43,10 +43,20 @@ RESUME_HEADINGS = {
              r"additional information|languages|affiliations|activities|awards|objective|profile",
 }
 
-REQUIRED_CUE = re.compile(r"\b(?:required|requires?|requirements?|mandatory|must|essential|minimum|"
-                          r"needs?|needed|necessary)\b", re.I)
-PREFERRED_CUE = re.compile(r"\b(?:preferred|prefer|nice[- ]to[- ]have|bonus|desirable|desired|"
-                           r"(?:is|are|a|considered a|big) plus|advantage(?:ous)?|ideally)\b", re.I)
+_REQUIRED_WORDS = r"required|requires?|requirements?|mandatory|must|essential|minimum|needs?|needed|necessary"
+_PREFERRED_WORDS = (r"preferred|prefer|nice[- ]to[- ]have|bonus|desirable|desired|"
+                    r"(?:is|are|a|considered a|big) plus|advantage(?:ous)?|ideally")
+# Phase 5 cues use plain word boundaries. Phase 6 found that glued text hides them
+# ("RequiredSQL Experience8"), so glued_cues=True also accepts a lowercase->Uppercase transition
+# as a boundary, the same rule the skill matcher uses. The Phase 5 behaviour stays the default
+# so committed Phase 5 results remain reproducible.
+_GLUE_BEFORE = r"(?:(?<![A-Za-z])|(?<=[a-z])(?=[A-Z]))"
+_GLUE_AFTER = r"(?:(?![A-Za-z])|(?<=[a-z])(?=[A-Z]))"
+CUES = {
+    False: (re.compile(rf"\b(?:{_REQUIRED_WORDS})\b", re.I), re.compile(rf"\b(?:{_PREFERRED_WORDS})\b", re.I)),
+    True: (re.compile(rf"{_GLUE_BEFORE}(?i:{_REQUIRED_WORDS}){_GLUE_AFTER}"),
+           re.compile(rf"{_GLUE_BEFORE}(?i:{_PREFERRED_WORDS}){_GLUE_AFTER}")),
+}
 
 
 def _compile(headings: dict) -> list[tuple[str, re.Pattern]]:
@@ -104,11 +114,12 @@ def labelled_segments(text: str, kind: str) -> list[tuple[int, int, str]]:
     return out
 
 
-def requirement_cue(sentence: str, position: int) -> str | None:
+def requirement_cue(sentence: str, position: int, glued_cues: bool = False) -> str | None:
     """Explicit wording in the sentence, taking the cue nearest to the skill at `position`:
     in "Python required, AWS a plus", Python -> required and AWS -> preferred."""
-    cues = [(abs(m.start() - position), "preferred") for m in PREFERRED_CUE.finditer(sentence)]
-    cues += [(abs(m.start() - position), "required") for m in REQUIRED_CUE.finditer(sentence)]
+    required, preferred = CUES[glued_cues]
+    cues = [(abs(m.start() - position), "preferred") for m in preferred.finditer(sentence)]
+    cues += [(abs(m.start() - position), "required") for m in required.finditer(sentence)]
     return min(cues)[1] if cues else None
 
 

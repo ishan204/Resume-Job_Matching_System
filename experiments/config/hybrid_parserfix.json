@@ -1,9 +1,9 @@
 {
   "model": "hybrid",
   "semantic_config": "semantic",
-  "weights_file": "config/matching_weights.json",
+  "weights_file": "config/matching_weights_parserfix.json",
   "preferred_alpha": 0.5,
-  "glued_cues": false,
+  "glued_cues": true,
   "selection_metric": "ndcg@10",
   "scaler_percentiles": [1, 99],
   "initial_weights": "A_initial",

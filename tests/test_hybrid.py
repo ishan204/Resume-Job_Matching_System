@@ -173,3 +173,15 @@ def test_hybrid_runs_through_the_shared_experiment(monkeypatch, tmp_path):
     assert ranking_metrics(p, "hybrid_score")[0] == metrics["test"]["ranking"]
     assert metrics["test"]["classification"]["thresholds"] == metrics["validation"]["classification"]["thresholds"]
     assert metrics["test"]["model_params"]["selected_on"] == "validation"
+
+
+def test_explanation_properties_hold_via_checker():
+    """Phase 6: the same property checker used on the real test set, on synthetic pairs."""
+    from ml.evaluation.explainability_check import CHECKS, check_pair
+    m = matcher()
+    for resume in (STRONG, WEAK):
+        saved = m.score_pairs([resume], [JOB])[0]
+        result = check_pair(m, resume, JOB, saved)
+        assert set(result) == set(CHECKS) and all(result.values()), result
+    # a wrong saved score must be detected
+    assert not check_pair(m, STRONG, JOB, 0.123)["score_matches_saved"]

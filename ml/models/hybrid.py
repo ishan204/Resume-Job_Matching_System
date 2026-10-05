@@ -80,9 +80,10 @@ def fit_scaler(features: pd.DataFrame, low=1, high=99) -> dict:
 
 class HybridMatcher:
     def __init__(self, semantic: SemanticMatcher, weights: dict | None = None, scaler: dict | None = None,
-                 alpha: float = 0.5, extractor=None):
+                 alpha: float = 0.5, extractor=None, glued_cues: bool = False):
         self.semantic, self.weights, self.scaler, self.alpha = semantic, weights, scaler or {}, alpha
         self.extractor = extractor or default_extractor()
+        self.glued_cues = glued_cues  # Phase 6 parser fix; False reproduces Phase 5
         self._jobs, self._resumes = {}, {}
 
     def fit(self, texts=None):
@@ -95,8 +96,9 @@ class HybridMatcher:
         t = normalize(text)
         if t not in self._jobs:
             duties, from_section = job_responsibilities(t)
-            self._jobs[t] = {"skills": self.extractor.job_skills(t), "experience": job_experience(t),
-                             "education": job_education(t), "responsibilities": duties,
+            g = self.glued_cues
+            self._jobs[t] = {"skills": self.extractor.job_skills(t, g), "experience": job_experience(t, g),
+                             "education": job_education(t, g), "responsibilities": duties,
                              "responsibilities_from_section": from_section}
         return self._jobs[t]
 

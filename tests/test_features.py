@@ -162,3 +162,20 @@ def test_alignment_score_and_bounds():
     assert best[0] == (0, 0, 1.0)
     assert -1 <= score <= 1
     assert alignment(np.empty((0, 2)), C) == (None, [])
+
+
+# ---------- Phase 6 regression: requirement cues glued to the next word ----------
+
+def test_glued_requirement_cue_regression():
+    from ml.features.sections import requirement_cue
+    job = normalize("Responsibilities Build reports with Tableau. RequiredSQL Experience8 years preferred Docker.")
+    old = X.job_skills(job)                    # Phase 5 behaviour, kept for reproducibility
+    new = X.job_skills(job, glued_cues=True)
+    assert old["SQL"]["status"] != "required"  # the documented Phase 5 miss
+    assert new["SQL"]["status"] == "required"
+    assert new["Docker"]["status"] == "preferred"
+    assert requirement_cue("RequiredSQL", 8, glued_cues=True) == "required"
+    assert requirement_cue("assignedPreferredDocker", 17, glued_cues=True) == "preferred"
+    # no new false cues inside ordinary words
+    for word in ["Mustang", "Needham", "Requirementsengineering"]:
+        assert requirement_cue(word, 0, glued_cues=True) is None

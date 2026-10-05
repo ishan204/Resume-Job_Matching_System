@@ -1,0 +1,12 @@
+{
+  "n_folds": 20,
+  "test_folds": 3,
+  "validation_folds": 3,
+  "repetitions": 5,
+  "seed": 2026,
+  "tfidf_config": "tfidf",
+  "semantic_config": "semantic",
+  "hybrid_config": "hybrid_parserfix",
+  "bootstrap_resamples": 10000,
+  "random_shuffles": 200
+}

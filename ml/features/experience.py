@@ -36,7 +36,7 @@ def _number(s: str) -> float:
     return float(_WORDS.get(s.lower(), s))
 
 
-def job_experience(text: str) -> dict:
+def job_experience(text: str, glued_cues: bool = False) -> dict:
     """Minimum / maximum required years and preferred years, from sentences that mention experience."""
     required, preferred, evidence = [], [], []
     for s, e, section in labelled_segments(text, "job"):
@@ -48,7 +48,7 @@ def job_experience(text: str) -> dict:
             hi = _number(m.group(2)) if m.group(2) else None
             if not 0 < lo <= 30:
                 continue
-            status = requirement_cue(sentence, m.start()) or section
+            status = requirement_cue(sentence, m.start(), glued_cues) or section
             (preferred if status == "preferred" else required).append((lo, hi))
             evidence.append(sentence)
     # Several requirements ("5+ years Python, 2+ years AWS"): the strictest one is the requirement.

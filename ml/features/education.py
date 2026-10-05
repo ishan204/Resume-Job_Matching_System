@@ -26,14 +26,14 @@ def degree_levels(text: str) -> list[int]:
     return [level for level, rx in _COMPILED if rx.search(text)]
 
 
-def job_education(text: str) -> dict:
+def job_education(text: str, glued_cues: bool = False) -> dict:
     """Required level = lowest level named in non-preferred sentences ("Bachelor's or Master's" -> 3)."""
     required, preferred = [], []
     for s, e, section in labelled_segments(text, "job"):
         sentence = text[s:e]
         for level, rx in _COMPILED:
             if m := rx.search(sentence):
-                status = requirement_cue(sentence, m.start()) or section
+                status = requirement_cue(sentence, m.start(), glued_cues) or section
                 (preferred if status == "preferred" else required).append(level)
     return {"required_level": min(required, default=None), "preferred_level": max(preferred, default=None)}
 

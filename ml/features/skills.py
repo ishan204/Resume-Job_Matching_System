@@ -62,7 +62,7 @@ class SkillExtractor:
                 out[m.skill] = text[s:e]
         return out
 
-    def job_skills(self, text: str) -> dict[str, dict]:
+    def job_skills(self, text: str, glued_cues: bool = False) -> dict[str, dict]:
         """skill -> {"status": required | preferred | uncertain, "evidence": sentence}.
 
         Status of one mention: the nearest explicit cue in its sentence ("must have", "a plus"),
@@ -76,7 +76,7 @@ class SkillExtractor:
             section = _containing(pieces, m.start)[2]
             s, e = _containing(sentences, m.start)
             sentence = text[s:e]
-            status = (requirement_cue(sentence, m.start - s)
+            status = (requirement_cue(sentence, m.start - s, glued_cues)
                       or (section if section in ("required", "preferred") else "uncertain"))
             if m.skill not in out or STRENGTH[status] > STRENGTH[out[m.skill]["status"]]:
                 out[m.skill] = {"status": status, "evidence": sentence}

@@ -1,7 +1,8 @@
 """Choose and freeze the hybrid's scaling + weights using VALIDATION ONLY, and run the ablation.
 
-    python -m ml.evaluation.hybrid_select                 # validation: weights, ablation, freeze
-    python -m ml.evaluation.hybrid_select --test-ablation # AFTER freezing: report ablation on test
+    python -m ml.evaluation.hybrid_select [config]                 # validation: weights, ablation, freeze
+    python -m ml.evaluation.hybrid_select [config] --test-ablation # AFTER freezing: report ablation on test
+config defaults to "hybrid" (Phase 5); other configs (e.g. hybrid_parserfix) write prefixed files.
 
 Selection never opens data/splits/test.csv. Rule (fixed in experiments/config/hybrid.json before any
 result): the candidate weight set with the highest validation NDCG@10 wins; ties go to the first listed.
@@ -63,19 +64,25 @@ def select(cfg: dict, features: pd.DataFrame, val: pd.DataFrame) -> tuple[str, d
 def _matcher(cfg: dict) -> HybridMatcher:
     sem = json.loads((EXPERIMENTS_DIR / f"{cfg['semantic_config']}.json").read_text())
     sem.pop("model", None)
-    return HybridMatcher(build_semantic(None, sem), alpha=cfg["preferred_alpha"])
+    return HybridMatcher(build_semantic(None, sem), alpha=cfg["preferred_alpha"],
+                         glued_cues=cfg.get("glued_cues", False))
 
 
-def main():
-    cfg = json.loads((EXPERIMENTS_DIR / "hybrid.json").read_text())
+def _prefix(config: str) -> str:
+    """Phase 5 file names are kept for the original config; any other config gets its own files."""
+    return "" if config == "hybrid" else f"{config}_"
+
+
+def main(config: str = "hybrid"):
+    cfg = json.loads((EXPERIMENTS_DIR / f"{config}.json").read_text())
     val = pd.read_csv(DATA_SPLITS / "validation.csv", keep_default_na=False)  # test is never loaded here
     matcher = _matcher(cfg)
     features = matcher.features(val["resume"], val["job_description"])
     matcher.semantic.save_cache()
 
     selected, scaler, comparison, ablation = select(cfg, features, val)
-    comparison.round(6).to_csv(RESULTS_DIR / "weight_comparison.csv", index=False)
-    ablation.round(6).to_csv(RESULTS_DIR / "hybrid_ablation_validation.csv", index=False)
+    comparison.round(6).to_csv(RESULTS_DIR / f"{_prefix(config)}weight_comparison.csv", index=False)
+    ablation.round(6).to_csv(RESULTS_DIR / f"{_prefix(config)}hybrid_ablation_validation.csv", index=False)
     frozen = {"selected": selected, "weights": cfg["candidate_weights"][selected], "scaler": scaler,
               "preferred_alpha": cfg["preferred_alpha"], "selection_metric": cfg["selection_metric"],
               "selected_on": "validation", "candidates_evaluated": len(comparison),
@@ -87,10 +94,10 @@ def main():
         print(ablation.round(4).to_string(index=False))
 
 
-def test_ablation():
+def test_ablation(config: str = "hybrid"):
     """Reporting only, after the weights are frozen: the same stages on test, with every stage's
     thresholds learned on validation. Nothing here feeds back into selection."""
-    cfg = json.loads((EXPERIMENTS_DIR / "hybrid.json").read_text())
+    cfg = json.loads((EXPERIMENTS_DIR / f"{config}.json").read_text())
     frozen = json.loads((ROOT / cfg["weights_file"]).read_text())
     matcher = _matcher(cfg)
     splits = {s: pd.read_csv(DATA_SPLITS / f"{s}.csv", keep_default_na=False) for s in ("validation", "test")}
@@ -102,9 +109,11 @@ def test_ablation():
         rows.append({"configuration": name,
                      **evaluate(splits["test"], combine(feats["test"], w, frozen["scaler"]), thresholds)})
     out = pd.DataFrame(rows)
-    out.round(6).to_csv(RESULTS_DIR / "hybrid_ablation_test.csv", index=False)
+    out.round(6).to_csv(RESULTS_DIR / f"{_prefix(config)}hybrid_ablation_test.csv", index=False)
     print(out.round(4).to_string(index=False))
 
 
 if __name__ == "__main__":
-    test_ablation() if "--test-ablation" in sys.argv else main()
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    config = args[0] if args else "hybrid"
+    test_ablation(config) if "--test-ablation" in sys.argv else main(config)

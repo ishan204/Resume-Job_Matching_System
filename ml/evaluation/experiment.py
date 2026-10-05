@@ -84,7 +84,7 @@ def build_hybrid(train: pd.DataFrame, params: dict) -> HybridMatcher:
     sem.pop("model", None)
     frozen = json.loads((ROOT / params["weights_file"]).read_text())
     model = HybridMatcher(build_semantic(train, sem), weights=frozen["weights"], scaler=frozen["scaler"],
-                          alpha=frozen["preferred_alpha"]).fit()
+                          alpha=frozen["preferred_alpha"], glued_cues=params.get("glued_cues", False)).fit()
     model.selection = frozen
     return model
 
@@ -94,6 +94,7 @@ def describe_hybrid(m: HybridMatcher) -> dict:
     return {"components": COMPONENTS, "weights": m.weights, "scaler": m.scaler, "preferred_alpha": m.alpha,
             "selected_config": sel["selected"], "selected_on": sel["selected_on"],
             "selection_metric": sel["selection_metric"], "taxonomy_skills": len(m.extractor.category),
+            "glued_cues": m.glued_cues,
             "semantic": describe_semantic(m.semantic)}
 
 
