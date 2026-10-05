@@ -21,11 +21,22 @@ pip install -r requirements.lock
 pytest
 ```
 
+Rebuild the dataset (not committed):
+
+```bash
+python -m ml.dataset.download
+python -m ml.dataset.prepare
+python -m ml.dataset.validate
+python -m ml.dataset.split
+python -m ml.evaluation.leakage_check
+```
+
 ## Status
 
 | Phase | Status |
 |---|---|
 | 1 Project initialization | done |
-| 2–13 | pending |
+| 2 Dataset pipeline (leakage check PASS) | done — see [docs/dataset.md](docs/dataset.md) |
+| 3–13 | pending |
 
 Results are added here only after experiments are actually run.

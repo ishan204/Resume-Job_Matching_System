@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA_RAW = ROOT / "data" / "raw"
 DATA_PROCESSED = ROOT / "data" / "processed"
+DATA_SPLITS = ROOT / "data" / "splits"
 CONFIG_DIR = ROOT / "config"
 RESULTS_DIR = ROOT / "results"
 EXPERIMENTS_DIR = ROOT / "experiments" / "config"

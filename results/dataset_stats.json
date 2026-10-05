@@ -1,0 +1,77 @@
+{
+  "seed": 42,
+  "total_examples": 7987,
+  "unique_resumes": 643,
+  "unique_jobs": 351,
+  "splits": {
+    "train": {
+      "rows": 5537,
+      "fraction": 0.6933,
+      "unique_resumes": 450,
+      "unique_jobs": 349,
+      "ranking_groups": 289,
+      "label_counts": {
+        "No Fit": 2705,
+        "Potential Fit": 1467,
+        "Good Fit": 1365
+      }
+    },
+    "validation": {
+      "rows": 1259,
+      "fraction": 0.1576,
+      "unique_resumes": 97,
+      "unique_jobs": 302,
+      "ranking_groups": 163,
+      "label_counts": {
+        "No Fit": 640,
+        "Good Fit": 369,
+        "Potential Fit": 250
+      }
+    },
+    "test": {
+      "rows": 1191,
+      "fraction": 0.1491,
+      "unique_resumes": 96,
+      "unique_jobs": 289,
+      "ranking_groups": 157,
+      "label_counts": {
+        "No Fit": 648,
+        "Potential Fit": 281,
+        "Good Fit": 262
+      }
+    }
+  },
+  "overlaps": {
+    "train/validation resume_id": 0,
+    "train/validation resume_group": 0,
+    "train/validation job_id": 300,
+    "train/validation resume_text": 0,
+    "train/test resume_id": 0,
+    "train/test resume_group": 0,
+    "train/test job_id": 288,
+    "train/test resume_text": 0,
+    "validation/test resume_id": 0,
+    "validation/test resume_group": 0,
+    "validation/test job_id": 259,
+    "validation/test resume_text": 0
+  },
+  "no_resume_overlap": true,
+  "prepare": {
+    "raw_rows": 8000,
+    "dropped_empty": 0,
+    "dropped_exact_duplicates": 1,
+    "dropped_conflicting_pairs": 12,
+    "rows": 7987,
+    "unique_resumes": 643,
+    "unique_jobs": 351,
+    "resume_groups": 593,
+    "resumes_in_multiple_pairs": 619,
+    "jobs_in_multiple_pairs": 348,
+    "near_duplicate_resumes_merged": 50,
+    "label_counts": {
+      "No Fit": 3993,
+      "Potential Fit": 1998,
+      "Good Fit": 1996
+    }
+  }
+}

@@ -19,11 +19,17 @@ def ranking_groups(df: pd.DataFrame) -> int:
     return int(((g["size"] >= 2) & (g["nunique"] >= 2)).sum())
 
 
+def _resume_texts(df: pd.DataFrame) -> set[str]:
+    """Normalised resume text, independent of the hashed ids."""
+    return set(df["resume"].str.lower().str.split().str.join(" "))
+
+
 def check(splits: dict[str, pd.DataFrame]) -> dict:
     overlaps = {}
     for a, b in combinations(splits, 2):
         for col in ("resume_id", "resume_group", "job_id"):
             overlaps[f"{a}/{b} {col}"] = len(set(splits[a][col]) & set(splits[b][col]))
+        overlaps[f"{a}/{b} resume_text"] = len(_resume_texts(splits[a]) & _resume_texts(splits[b]))
 
     allrows = pd.concat(splits.values())
     total = len(allrows)
@@ -57,8 +63,8 @@ def main():
     (RESULTS_DIR / "dataset_stats.json").write_text(json.dumps(report, indent=2))
     print(json.dumps(report, indent=2))
     if not report["no_resume_overlap"]:
-        raise SystemExit("LEAKAGE: resume overlap between splits")
-    print("OK: no resume overlap between splits")
+        raise SystemExit("LEAKAGE CHECK: FAIL")
+    print("LEAKAGE CHECK: PASS")
 
 
 if __name__ == "__main__":

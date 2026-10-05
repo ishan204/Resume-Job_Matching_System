@@ -1,7 +1,7 @@
 """Schema inspection and validation of the processed dataset."""
 import pandas as pd
 
-from ml.config import LABELS
+from ml.config import DATA_PROCESSED, DATA_SPLITS, LABELS
 
 REQUIRED_COLUMNS = ["resume", "job_description", "label", "label_id",
                     "resume_id", "job_id", "resume_group"]
@@ -32,3 +32,16 @@ def validate(df: pd.DataFrame) -> None:
         raise ValueError("label_id does not match label")
     if df.duplicated(["resume_id", "job_id"]).any():
         raise ValueError("duplicate (resume, job) pairs present")
+
+
+def main():
+    """Step 3: validate the processed dataset (and the splits, if present)."""
+    validate(pd.read_parquet(DATA_PROCESSED / "all.parquet"))
+    print("OK: data/processed/all.parquet")
+    for path in sorted(DATA_SPLITS.glob("*.csv")):
+        validate(pd.read_csv(path, keep_default_na=False))
+        print(f"OK: {path.relative_to(path.parents[2])}")
+
+
+if __name__ == "__main__":
+    main()

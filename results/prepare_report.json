@@ -1,0 +1,18 @@
+{
+  "raw_rows": 8000,
+  "dropped_empty": 0,
+  "dropped_exact_duplicates": 1,
+  "dropped_conflicting_pairs": 12,
+  "rows": 7987,
+  "unique_resumes": 643,
+  "unique_jobs": 351,
+  "resume_groups": 593,
+  "resumes_in_multiple_pairs": 619,
+  "jobs_in_multiple_pairs": 348,
+  "near_duplicate_resumes_merged": 50,
+  "label_counts": {
+    "No Fit": 3993,
+    "Potential Fit": 1998,
+    "Good Fit": 1996
+  }
+}

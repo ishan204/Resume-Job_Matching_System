@@ -17,7 +17,8 @@ Research inspiration: [ConFit v2](https://github.com/jasonyux/ConFit-v2) — a r
 ├── config/                    # matching_weights.json, skills taxonomy   (Phase 5)
 ├── data/
 │   ├── raw/                   # downloaded dataset        (git-ignored)
-│   └── processed/             # cleaned + split parquet   (git-ignored)
+│   ├── processed/             # cleaned all.parquet       (git-ignored)
+│   └── splits/                # train/validation/test.csv + split_summary.json (git-ignored)
 ├── ml/
 │   ├── config.py              # paths, seed, dataset revision, model names
 │   ├── dataset/               # download, prepare, validate, split   (Phase 2)
@@ -57,12 +58,14 @@ No external LLM is used anywhere.
 - **Schema (verified):** `resume_text`, `job_description_text`, `label` ∈ {No Fit, Potential Fit, Good Fit}.
   Original splits: train 6,241 / test 1,759.
 - **No resume or job IDs are provided.** We derive them:
-  `resume_id = sha1(normalised resume text)`, `job_id = sha1(normalised JD text)`.
-  Limitation: near-duplicate resumes (same person, small edits) get different IDs; Phase 2
-  will measure this with a near-duplicate check and document it.
+  `resume_id = sha1(normalised resume text)`, `job_id = sha1(normalised JD text)`, and
+  `resume_group` = connected components of resumes with TF-IDF cosine ≥ 0.9 (near-duplicates).
 - **Pipeline:** merge original train+test → normalise columns/labels → clean text →
-  drop exact duplicate pairs → detect duplicate resumes/jobs → **grouped split by `resume_id`**
-  70/15/15 with seed 42 → save parquet.
+  drop exact duplicate and label-conflicting pairs → group near-duplicate resumes →
+  **grouped split by `resume_group`** 70/15/15 with seed 42 → `data/splits/*.csv`.
+- **Phase 2 outcome (see docs/dataset.md):** 7,987 pairs from only 643 resumes / 351 jobs;
+  the original HF split leaks 476 of 477 test resumes into train, so it is discarded.
+  Grouped split: 5,537 / 1,259 / 1,191 rows; leakage check PASS; reproducibility PASS.
 - **Leakage check:** `ml/evaluation/leakage_check.py` asserts pairwise-empty resume-ID
   intersections across train/val/test and reports all counts.
 - **Ranking groups:** a ranking query = one `job_id` with all its candidate resumes in that split.
@@ -115,8 +118,8 @@ If the hybrid loses, we report it and analyse why.
 
 | Phase | Deliverable | Commit |
 |---|---|---|
-| 1 | Repo, architecture, environment, docs skeleton | project initialization |
-| 2 | Dataset pipeline, leakage check, grouped split | dataset pipeline |
+| 1 ✅ | Repo, architecture, environment, docs skeleton | project initialization |
+| 2 ✅ | Dataset pipeline, leakage check, grouped split | dataset pipeline |
 | 3 | TF-IDF baseline | TF-IDF baseline |
 | 4 | BGE semantic baseline | semantic baseline |
 | 5 | Parsers, skills/experience/education features, hybrid | hybrid model |
