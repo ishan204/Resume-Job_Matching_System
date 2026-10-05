@@ -1,0 +1,9 @@
+[project]
+name = "resume-job-matching"
+version = "0.1.0"
+description = "Explainable AI-Based Resume–Job Matching Using Semantic and Skill-Aware Ranking"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

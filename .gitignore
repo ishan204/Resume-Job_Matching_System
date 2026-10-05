@@ -1,0 +1,23 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Dataset (never committed — rebuild with ml/dataset/download.py)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Model caches
+.cache/
+
+# Frontend
+node_modules/
+dist/
+
+# Secrets / OS
+.env
+Thumbs.db
+.DS_Store
