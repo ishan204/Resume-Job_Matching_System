@@ -165,3 +165,10 @@ def test_real_bge_model():
     assert e.shape == (3, 768)
     np.testing.assert_allclose(np.linalg.norm(e, axis=1), 1.0, rtol=1e-5)
     assert m.score_pair(PY, PY2)["score"] > m.score_pair(PY, CHEF)["score"]
+
+
+def test_encoding_stats_are_snapshotted_per_split(fake_semantic):
+    _, _, metrics = experiment.run("semantic", _splits(), fake_semantic)
+    v = metrics["validation"]["model_params"]["encoding_stats"]["texts_requested"]
+    t = metrics["test"]["model_params"]["encoding_stats"]["texts_requested"]
+    assert v == 2 * 5 and t == 2 * 5 + 2 * 5  # cumulative counter, frozen at each split

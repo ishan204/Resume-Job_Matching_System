@@ -26,7 +26,7 @@ Research inspiration: [ConFit v2](https://github.com/jasonyux/ConFit-v2) — a r
 │   ├── features/              # skills, experience, education, feature vector
 │   ├── models/                # tfidf.py, semantic.py, hybrid.py     (Phases 3–5)
 │   └── evaluation/            # metrics, leakage_check, experiment protocol (Phases 2–3, 6–7)
-├── artifacts/                 # fitted models, e.g. tfidf.joblib (git-ignored)
+├── artifacts/                 # tfidf.joblib, cache/ of BGE embeddings (git-ignored)
 ├── backend/                   # FastAPI app                            (Phase 8)
 ├── frontend/                  # React + TypeScript + Tailwind + Recharts (Phase 9)
 ├── experiments/config/        # frozen config of every experiment run
@@ -70,6 +70,11 @@ No external LLM is used anywhere.
 
 **Phase 3 outcome (see docs/algorithms.md):** TF-IDF test NDCG@10 0.7945 vs 0.7582 for random
 ordering, MRR 0.7638 vs 0.7141; macro F1 0.3938 (always-No-Fit 0.2349). Weak but real lexical signal.
+
+**Phase 4 outcome (see docs/algorithms.md):** zero-shot BGE (`bge-base-en-v1.5`, no instruction,
+truncate to 512 tokens, chosen over chunk-averaging on validation NDCG@10). Test NDCG@10 0.8231,
+MRR 0.7870, MAP 0.7531, macro F1 0.4226 — above TF-IDF on every metric (Δ NDCG@10 +0.029);
+significance not yet tested. Potential vs Good Fit remain hard to separate.
 - **Leakage check:** `ml/evaluation/leakage_check.py` asserts pairwise-empty resume-ID
   intersections across train/val/test and reports all counts.
 - **Ranking groups:** a ranking query = one `job_id` with all its candidate resumes in that split.
@@ -127,7 +132,7 @@ If the hybrid loses, we report it and analyse why.
 | 1 ✅ | Repo, architecture, environment, docs skeleton | project initialization |
 | 2 ✅ | Dataset pipeline, leakage check, grouped split | dataset pipeline |
 | 3 ✅ | TF-IDF baseline | TF-IDF baseline |
-| 4 | BGE semantic baseline | semantic baseline |
+| 4 ✅ | BGE semantic baseline | semantic baseline |
 | 5 | Parsers, skills/experience/education features, hybrid | hybrid model |
 | 6 | Metrics + evaluation engine | evaluation framework |
 | 7 | Weight + ablation experiments (validation) | experiments |

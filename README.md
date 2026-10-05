@@ -37,6 +37,14 @@ Run the TF-IDF baseline (fits on train, thresholds on validation, scores test on
 python -m ml.evaluation.experiment tfidf
 ```
 
+Run the semantic baseline (downloads BAAI/bge-base-en-v1.5 on first use, CPU is fine, ~15 min;
+embeddings are cached in `artifacts/cache/`) and compare:
+
+```bash
+python -m ml.evaluation.experiment semantic
+python -m ml.evaluation.compare tfidf semantic
+```
+
 ## Status
 
 | Phase | Status |
@@ -44,6 +52,7 @@ python -m ml.evaluation.experiment tfidf
 | 1 Project initialization | done |
 | 2 Dataset pipeline (leakage check PASS) | done — see [docs/dataset.md](docs/dataset.md) |
 | 3 TF-IDF baseline | done — test NDCG@10 0.7945, MRR 0.7638, macro F1 0.3938 (see [docs/algorithms.md](docs/algorithms.md)) |
-| 4–13 | pending |
+| 4 Semantic baseline (BGE) | done — test NDCG@10 0.8231, MRR 0.7870, macro F1 0.4226 |
+| 5–13 | pending |
 
 Results are added here only after experiments are actually run.

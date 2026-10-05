@@ -71,7 +71,8 @@ def describe_semantic(m: SemanticMatcher) -> dict:
             "long_text": m.long_text, "query_instruction": m.query_instruction,
             "embedding_dim": int(m.encoder.get_embedding_dimension()),
             "normalized_embeddings": True, "fine_tuned": False,
-            "cache_file": m.cache_path.name if m.cache_path else None, "encoding_stats": m.stats,
+            "cache_file": m.cache_path.name if m.cache_path else None,
+            "encoding_stats": dict(m.stats),  # snapshot: the counters keep growing as later splits are encoded
             "versions": {"sentence_transformers": sentence_transformers.__version__,
                          "torch": torch.__version__}}
 
