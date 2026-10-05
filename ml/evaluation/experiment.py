@@ -69,7 +69,7 @@ def describe_semantic(m: SemanticMatcher) -> dict:
     return {"model_name": m.model_name, "revision": m.revision, "device": m.device,
             "batch_size": m.batch_size, "max_seq_length": m.encoder.max_seq_length,
             "long_text": m.long_text, "query_instruction": m.query_instruction,
-            "embedding_dim": int(m.encoder.get_sentence_embedding_dimension()),
+            "embedding_dim": int(m.encoder.get_embedding_dimension()),
             "normalized_embeddings": True, "fine_tuned": False,
             "cache_file": m.cache_path.name if m.cache_path else None, "encoding_stats": m.stats,
             "versions": {"sentence_transformers": sentence_transformers.__version__,

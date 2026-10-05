@@ -50,7 +50,9 @@ class SemanticMatcher:
         if cache_path is not None and cache_path.exists():
             with np.load(cache_path) as stored:
                 self._cache = {k: stored[k] for k in stored.files}
-        self.stats = {"texts_requested": 0, "texts_encoded": 0, "chunks_encoded": 0, "cache_hits": 0}
+        # texts_requested: rows asked for; texts_encoded: distinct new texts run through the model;
+        # reused_cached: requests whose embedding existed before the call (earlier split or disk cache)
+        self.stats = {"texts_requested": 0, "texts_encoded": 0, "chunks_encoded": 0, "reused_cached": 0}
 
     def fit(self, texts=None):
         """Zero-shot baseline: nothing is learned. Kept so every matcher has the same interface."""
@@ -74,7 +76,7 @@ class SemanticMatcher:
         keys = [_key(t) for t in texts]
         self.stats["texts_requested"] += len(texts)
         todo = sorted({k: t for k, t in zip(keys, texts) if k not in self._cache}.items())
-        self.stats["cache_hits"] += sum(k in self._cache for k in keys)
+        self.stats["reused_cached"] += sum(k in self._cache for k in keys)
 
         if todo:
             chunks, owners, weights = [], [], []

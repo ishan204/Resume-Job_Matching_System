@@ -6,7 +6,7 @@
   "device": "auto",
   "batch_size": 16,
   "max_seq_length": 512,
-  "long_text": "truncate",
+  "long_text": "chunk_mean",
   "query_instruction": null,
   "cache": true,
   "seed": 42

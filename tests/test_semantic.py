@@ -28,7 +28,7 @@ class FakeEncoder:
     def tokenizer(text, **_):
         return {"offset_mapping": [m.span() for m in re.finditer(r"\S+", text)]}
 
-    def get_sentence_embedding_dimension(self):
+    def get_embedding_dimension(self):
         return DIM
 
     def encode(self, texts, batch_size=32, normalize_embeddings=True, prompt=None, **_):
@@ -97,7 +97,7 @@ def test_disk_cache_roundtrip(tmp_path):
     m1.save_cache()
     m2 = matcher(cache_path=path)
     np.testing.assert_array_equal(m2.encode([PY, CHEF]), e1)
-    assert m2.encoder.encoded == [] and m2.stats["cache_hits"] == 2
+    assert m2.encoder.encoded == [] and m2.stats["reused_cached"] == 2
 
 
 def test_long_text_chunking():
