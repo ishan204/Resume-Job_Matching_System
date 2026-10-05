@@ -75,6 +75,12 @@ ordering, MRR 0.7638 vs 0.7141; macro F1 0.3938 (always-No-Fit 0.2349). Weak but
 truncate to 512 tokens, chosen over chunk-averaging on validation NDCG@10). Test NDCG@10 0.8231,
 MRR 0.7870, MAP 0.7531, macro F1 0.4226 — above TF-IDF on every metric (Δ NDCG@10 +0.029);
 significance not yet tested. Potential vs Good Fit remain hard to separate.
+
+**Phase 5 outcome (see docs/algorithms.md, docs/innovation.md):** Skill-Aware Hybrid (semantic 0.60,
+required skills 0.15, preferred 0.05, experience 0.10, responsibilities 0.10; selected on validation
+from 6 pre-declared weightings). Test: NDCG@10 0.8459, MRR 0.8341 — best of all models, hybrid − BGE
+bootstrap CIs exclude 0. **Not replicated on validation** (hybrid − BGE NDCG@10 −0.003, CI spans 0).
+Verdict: promising, not conclusive; repeated grouped splits needed (Phase 10).
 - **Leakage check:** `ml/evaluation/leakage_check.py` asserts pairwise-empty resume-ID
   intersections across train/val/test and reports all counts.
 - **Ranking groups:** a ranking query = one `job_id` with all its candidate resumes in that split.
@@ -133,12 +139,12 @@ If the hybrid loses, we report it and analyse why.
 | 2 ✅ | Dataset pipeline, leakage check, grouped split | dataset pipeline |
 | 3 ✅ | TF-IDF baseline | TF-IDF baseline |
 | 4 ✅ | BGE semantic baseline | semantic baseline |
-| 5 | Parsers, skills/experience/education features, hybrid | hybrid model |
+| 5 ✅ | Parsers, skills/experience/education features, hybrid | hybrid model |
 | 6 | Metrics + evaluation engine | evaluation framework |
 | 7 | Weight + ablation experiments (validation) | experiments |
 | 8 | FastAPI backend | backend API |
 | 9 | Functional React frontend | frontend |
-| 10 | Final test-set experiments | experiments |
+| 10 | Final test-set experiments + repeated grouped splits (cross-validation) to check whether the hybrid gain replicates | experiments |
 | 11 | Research/results page populated | frontend |
 | 12 | Frontend polish | frontend |
 | 13 | Optional cross-encoder | optional |

@@ -45,6 +45,17 @@ python -m ml.evaluation.experiment semantic
 python -m ml.evaluation.compare tfidf semantic
 ```
 
+Skill-Aware Hybrid: choose weights on validation (writes `config/matching_weights.json`), score test once,
+then compare and test significance:
+
+```bash
+python -m ml.evaluation.hybrid_select
+python -m ml.evaluation.experiment hybrid
+python -m ml.evaluation.hybrid_select --test-ablation
+python -m ml.evaluation.compare tfidf semantic hybrid
+python -m ml.evaluation.significance tfidf semantic hybrid
+```
+
 ## Status
 
 | Phase | Status |
@@ -53,6 +64,7 @@ python -m ml.evaluation.compare tfidf semantic
 | 2 Dataset pipeline (leakage check PASS) | done — see [docs/dataset.md](docs/dataset.md) |
 | 3 TF-IDF baseline | done — test NDCG@10 0.7945, MRR 0.7638, macro F1 0.3938 (see [docs/algorithms.md](docs/algorithms.md)) |
 | 4 Semantic baseline (BGE) | done — test NDCG@10 0.8231, MRR 0.7870, macro F1 0.4226 |
-| 5–13 | pending |
+| 5 Skill-Aware Hybrid (student innovation) | done — test NDCG@10 0.8459, MRR 0.8341, macro F1 0.4386; gain over BGE significant on test but not replicated on validation |
+| 6–13 | pending |
 
 Results are added here only after experiments are actually run.

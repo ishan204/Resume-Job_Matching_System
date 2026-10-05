@@ -359,10 +359,253 @@ The TF-IDF row is the historical Phase 3 result, read from its saved file and no
 These gaps (required vs preferred skills, experience and responsibility alignment) are exactly
 what the Skill-Aware Hybrid (Phase 5) models explicitly.
 
-## Skill extraction
+## Student-Designed Skill-Aware Hybrid (`SKILL_AWARE_HYBRID`, Phase 5)
 
-TODO (Phase 5)
+> **This is the project's own improvement**, a student-designed system improvement, not a claim of
+> novel research. See also [innovation.md](innovation.md).
 
-## Hybrid scoring (student innovation)
+Code: `ml/models/hybrid.py`, `ml/features/*.py` · taxonomy: `config/skills.json` ·
+candidate weights: `experiments/config/hybrid.json` · frozen weights: `config/matching_weights.json`
+· selection: `python -m ml.evaluation.hybrid_select` · test run: `python -m ml.evaluation.experiment hybrid`
 
-TODO (Phase 5)
+### 1–3. Why: the problem with both baselines
+
+- **TF-IDF** compares *words*. It misses synonyms and has no idea what a requirement is.
+- **BGE** compares *meaning*, but squeezes a whole document into one vector. A candidate who is
+  "about" the right topic but lacks a mandatory skill still looks similar. Phase 4 showed this:
+  BGE's mean test score is 0.651 for Potential Fit and 0.660 for Good Fit.
+- Neither answers the questions a recruiter asks: *Does the candidate have the required skills?
+  Which are missing? Enough years of experience? Have they done this kind of work?*
+
+The hybrid adds explicit, explainable, requirement-aware features to the semantic score.
+
+### 4. Skill extraction (`ml/features/skills.py`)
+
+- **Taxonomy** `config/skills.json`: 178 canonical skills in 17 categories (programming, web, data,
+  cloud, devops, AI, BI, office, accounting, finance, certifications, …), with 454 case-insensitive
+  aliases plus a few case-sensitive ones. The choice of skills was guided by skill frequencies in
+  **train** job descriptions only. The jobs are ~57% software/data/IT and ~27% finance/accounting.
+- **Aliases are normalised**: ReactJS / React.js → React, NodeJS → Node.js, Postgres → PostgreSQL,
+  ML → Machine Learning, K8s → Kubernetes.
+- **Distinct technologies stay distinct**: one regex alternation is sorted longest-alias first, so at
+  any position "JavaScript" wins over "Java" and "PostgreSQL" over "SQL". Python ≠ Java,
+  AWS ≠ Azure, React ≠ Angular, Docker ≠ Kubernetes (all unit-tested).
+- **Ambiguous words** only match in safe forms: "react quickly", "Spring 2019", "R&D",
+  "go to market" and "excellent" are not skills. Plain "R" and "C" are not matched at all.
+- **Glued text** (`ExcelPreparing`): a lowercase→Uppercase transition also counts as a word boundary.
+- **Soft skills are excluded** on purpose ("communication" appears in 149 of 349 train jobs). They
+  cannot be verified from a resume.
+- Every extracted skill keeps its **evidence sentence**.
+
+### 5. Required vs preferred (`ml/features/sections.py`)
+
+The text has lost its line breaks, so headings are glued into running text
+("…projects as assigned Required Qualifications1-3 years…"). Headings are therefore searched for
+anywhere. They must be capitalised and followed by a capital, digit or colon, so "Experience in C#"
+or "requirements are…" do not count. Each skill mention then gets a status:
+
+1. **Cue in its own sentence**, choosing the cue *nearest* the skill: required ← required, must,
+   mandatory, essential, minimum, need; preferred ← preferred, nice to have, bonus, desirable,
+   a plus. "Python required, Terraform a plus" → Python required, Terraform preferred.
+2. Otherwise **the section it is in** ("Required/Minimum/Basic Qualifications", "Requirements",
+   generic "Qualifications" → required; "Preferred Qualifications", "Nice to have" → preferred).
+3. Otherwise **uncertain**. It is kept as its own state, not forced into either class.
+
+A skill mentioned several times keeps its strongest status. On the evaluation data, required skills
+are detected for **71%** of pairs (median 2 per job) and preferred skills for **37–38%**.
+
+### 6. Features (stored in every prediction file)
+
+| Feature | Definition | Used in score |
+|---|---|---|
+| `semantic_similarity` | Phase 4 BGE cosine; min-max scaled with validation 1st/99th percentiles [0.473, 0.761], clipped to [0, 1] | yes |
+| `required_skill_coverage` | matched required / required; **0 when none detected**, with `required_skill_count` = 0 to tell "none detected" from "none matched" | yes, if count > 0 |
+| `preferred_skill_coverage` | same for preferred skills | yes, if count > 0 |
+| `weighted_skill_coverage` | (req matches + α·pref matches) / (req + α·pref), **α = 0.5** (a preferred skill counts half; α < 1 keeps required more important) | diagnostic |
+| `job_skill_coverage` | share of *all* detected job skills, including uncertain | diagnostic |
+| `experience_match` | min(1, candidate years / required minimum years): 3 of 5 years → 0.6, graded not binary | yes, if both known |
+| `responsibility_similarity` | see §7; scaled with validation percentiles [0.458, 0.710] | yes |
+| `education_match` | 1 meets degree level, 0.5 one level below, 0 lower | diagnostic |
+| counts, gap, years | `missing_required_skill_count`, `experience_gap`, `required_experience_years`, … | explanation |
+
+**Experience** (`ml/features/experience.py`). For the job: "2+ years", "at least 3 years",
+"5 years", "5–7 years", "minimum of two (2) years", "3 or more years". Only sentences that mention
+experience are used; the strictest non-preferred minimum is taken. For the candidate: employment
+date ranges (`04/2018toCurrent`, `09/2015-06/2016`, `January 2015 - Present`, `2012 - 2015`) outside
+the Education section. **Overlapping jobs are merged** so they count once. "Present" is the latest
+explicit date in the same resume: resumes are undated (written 2012–2023), so this deliberately
+*undercounts* a current role rather than guessing. If no dates parse, the largest stated
+"N years of experience" is used. Candidate years are known for 97–99% of pairs and the job states
+years for 65–66%, so `experience_match` is available for 64%.
+
+**Not implemented** (so not in the schema): relevant-experience years, seniority, job-title
+similarity, project relevance, domain similarity. There is no title field and no reliable project
+section in this data, so heuristics would have been noise. They are future work, not fabricated
+features.
+
+### 7. Responsibility alignment (`ml/features/responsibilities.py`)
+
+Job duties = sentences under a responsibilities heading ("Responsibilities", "Essential Job
+Functions", "What you'll do", …; found for 49–50% of jobs). Otherwise, all sentences outside the
+benefits/company sections. Candidate evidence = sentences from the resume's experience section. Both
+are embedded with the same BGE model, and each duty is matched to its **single best** candidate
+sentence:
+
+`responsibility_similarity = mean over duties of ( max over candidate sentences of cos(duty, sentence) )`
+
+This is a different signal from whole-document similarity (sentence-level best match, experience
+section only), so it does not simply double-count the semantic score. The best-matching pairs are
+returned as evidence.
+
+### 8. Hybrid formula
+
+```
+hybrid = Σ wᵢ · fᵢ  /  Σ wᵢ        summed over the components fᵢ AVAILABLE for this pair
+```
+
+- All fᵢ ∈ [0, 1] and wᵢ ≥ 0, so the hybrid is in [0, 1] (unit-tested).
+- **Missing evidence is left out, not scored as 0.** If the job lists no required skills or states
+  no years, those terms are dropped and the remaining weights renormalised. "Not stated" is not
+  a mismatch.
+- The score is a weighted similarity/coverage score, not a probability.
+
+### 9. Weight selection (validation only)
+
+Six weight sets were written into `experiments/config/hybrid.json` **before any result**. They are
+small and principled: required always > preferred, each emphasising one aspect. They were compared on
+validation with the rule *highest validation NDCG@10 wins, ties to the first listed*.
+`hybrid_select.py` reads only `validation.csv`; a unit test points it at a folder containing only
+`validation.csv`, so opening test would crash it. The scaling bounds are also fitted on validation.
+
+| Validation | Sem | Req | Pref | Exp | Resp | NDCG@10 | MRR | MAP | Macro F1 |
+|---|---|---|---|---|---|---|---|---|---|
+| A_initial | .40 | .25 | .10 | .10 | .15 | 0.8010 | 0.7399 | 0.7286 | 0.4153 |
+| **B_semantic_heavy (selected)** | **.60** | **.15** | **.05** | **.10** | **.10** | **0.8085** | 0.7705 | 0.7393 | 0.4240 |
+| C_balanced | .25 | .25 | .10 | .15 | .25 | 0.7965 | 0.7379 | 0.7214 | 0.4077 |
+| D_skill_heavy | .30 | .40 | .15 | .05 | .10 | 0.8034 | 0.7435 | 0.7309 | 0.4108 |
+| E_experience_heavy | .30 | .20 | .10 | .30 | .10 | 0.8064 | 0.7596 | 0.7334 | 0.4127 |
+| F_responsibility_heavy | .30 | .20 | .05 | .10 | .35 | 0.8039 | 0.7609 | 0.7294 | 0.4185 |
+
+Frozen in `config/matching_weights.json`; the test set was then scored once. Classification
+thresholds (learned on validation, frozen): t1 = 0.5190, t2 = 0.6639.
+
+### 10. Ablation
+
+Stages A–E use the initial weights restricted to the listed components (renormalised); F is the
+frozen final model. The validation ablation was part of the protocol. The **test** ablation was run
+only *after* freezing, as a report: every stage's thresholds come from validation, and nothing fed
+back into any decision.
+
+| Stage | Val NDCG@10 | Val MRR | Val F1 | Test NDCG@10 | Test MRR | Test MAP | Test F1 |
+|---|---|---|---|---|---|---|---|
+| A semantic only | **0.8114** | **0.7729** | 0.4133 | 0.8231 | 0.7870 | 0.7531 | 0.4226 |
+| B + required skills | 0.8094 | 0.7539 | 0.4148 | 0.8177 | 0.7917 | 0.7474 | 0.4074 |
+| C + preferred skills | 0.8041 | 0.7393 | 0.4172 | 0.8178 | 0.7874 | 0.7471 | 0.4348 |
+| D + experience | 0.8060 | 0.7466 | 0.4184 | 0.8335 | 0.8103 | 0.7636 | 0.4280 |
+| E + responsibilities | 0.8010 | 0.7399 | 0.4153 | 0.8411 | 0.8206 | 0.7781 | 0.4271 |
+| F final (semantic-heavy) | 0.8085 | 0.7705 | **0.4240** | **0.8459** | **0.8341** | **0.7848** | **0.4386** |
+
+Row A reproduces the Phase 4 semantic results exactly on both splits (consistency check).
+
+### Results: Random vs TF-IDF vs BGE vs Hybrid (test, executed 2026-10-06)
+
+Same 1,191 pairs, same 157 rankable jobs (154 for MRR/MAP/P@k), same metric code for every model.
+
+| Model | MRR | MAP | NDCG@5 | NDCG@10 | P@1 | P@5 | Accuracy | Macro F1 |
+|---|---|---|---|---|---|---|---|---|
+| Random ordering | 0.7141 | 0.6670 | 0.6944 | 0.7582 | 0.5121 | 0.5116 | — | — |
+| TF-IDF | 0.7638 | 0.7179 | 0.7249 | 0.7945 | 0.5974 | 0.5079 | 0.4358 | 0.3938 |
+| Semantic BGE | 0.7870 | 0.7531 | 0.7653 | 0.8231 | 0.6494 | 0.5339 | 0.4769 | 0.4226 |
+| **Skill-Aware Hybrid** | **0.8341** | **0.7848** | **0.7997** | **0.8459** | **0.7013** | **0.5508** | **0.5113** | **0.4386** |
+| Hybrid − TF-IDF | +0.0703 | +0.0669 | +0.0748 | +0.0514 | +0.1039 | +0.0429 | +0.0755 | +0.0448 |
+| Hybrid − BGE | +0.0471 | +0.0317 | +0.0345 | +0.0228 | +0.0519 | +0.0169 | +0.0344 | +0.0160 |
+| Hybrid − Random | +0.1200 | +0.1178 | +0.1053 | +0.0877 | +0.1892 | +0.0391 | — | — |
+
+Hybrid test confusion matrix (rows = true, columns = predicted; No / Potential / Good):
+`[[433, 148, 67], [108, 99, 74], [94, 91, 77]]`.
+
+**Paired bootstrap over jobs** (`results/significance_test.csv`; 10,000 resamples, seed 42; jobs are
+resampled, not candidate rows):
+
+| Difference | NDCG@10 [95% CI] | MRR [95% CI] | MAP [95% CI] | NDCG@5 [95% CI] |
+|---|---|---|---|---|
+| BGE − TF-IDF (test) | +0.029 [+0.001, +0.056] | +0.023 [−0.025, +0.072] | +0.035 [+0.000, +0.069] | +0.040 [+0.010, +0.072] |
+| Hybrid − TF-IDF (test) | +0.051 [+0.026, +0.078] | +0.070 [+0.025, +0.116] | +0.067 [+0.034, +0.099] | +0.075 [+0.045, +0.106] |
+| Hybrid − BGE (test) | +0.023 [+0.007, +0.039] | +0.047 [+0.015, +0.080] | +0.032 [+0.012, +0.052] | +0.034 [+0.017, +0.053] |
+| *Hybrid − BGE (validation)* | −0.003 [−0.018, +0.012] | −0.002 [−0.034, +0.029] | −0.001 [−0.022, +0.018] | −0.003 [−0.023, +0.015] |
+
+No multiple-comparison correction is applied. The hybrid − BGE test p-values (0.0002–0.0038) would
+still pass a Bonferroni threshold of 0.05/12 ≈ 0.004. BGE − TF-IDF would not.
+
+### Interpretation (answering the research question honestly)
+
+1. **Does the hybrid outperform BGE?** On the test split: yes, on every metric, and the ranking
+   gains are statistically significant. On the validation split: no, it is equal to BGE within
+   noise. **The improvement does not replicate across the two held-out splits.**
+2. **Does it outperform TF-IDF?** Yes, clearly, on both splits and every metric (test CIs exclude 0).
+3. **Which additions help?** No single addition helps consistently. On test, experience (+0.016
+   NDCG@10) and responsibilities (+0.008) add the most. On validation they add +0.002 and −0.005.
+   Giving more weight to semantic similarity (B vs A) helped on both splits.
+4. **Does required-skill coverage help?** **Not for ranking, on either split** (NDCG@10 −0.002 val,
+   −0.005 test when added). Its within-job correlation with the label is weak and unstable
+   (+0.06 val, +0.20 test). It is still the most useful part of the *explanation*.
+5. **Does experience help?** Mixed: +0.002 (val) and +0.016 (test) NDCG@10. Its within-job
+   correlation with the label is +0.21 on validation but −0.01 on test.
+6. **Does responsibility similarity help?** Mixed: −0.005 (val), +0.008 (test).
+7. **Does it improve one metric while harming another?** On validation, the final hybrid trades a
+   little ranking (−0.003 NDCG@10, −0.002 MRR) for better classification (macro F1 +0.011,
+   accuracy +0.018). On test it improves everything.
+8. **Consistent between validation and test?** Not for ranking. Extraction coverage is identical in
+   both splits (required skills for 71% of pairs, experience for 64%), so the parsing behaves the
+   same. What changes is how strongly each feature tracks the label inside a job, across two
+   samples of only ~96 resumes. A single 15% split cannot settle a difference of this size;
+   repeated grouped splits (cross-validation) are needed and planned for the final experiments.
+9. **Verdict.** H1 is supported on the held-out test split, but the evidence overall is promising,
+   not conclusive. Individually, the explicit features carry signal: on validation, ranking by
+   preferred-skill coverage alone gives NDCG@10 0.8231, by experience match alone 0.8204, and by
+   semantic alone 0.8114. A hand-weighted linear sum does not reliably turn that into better
+   rankings. Learning the weights, for example on the currently unused train split, is the natural
+   next step.
+
+### 11. Explainability
+
+`HybridMatcher.explain(resume, job)` returns the overall score, each component (and which were
+used), matched and missing required/preferred skills with their evidence sentences, uncertain job
+skills, candidate vs required years and the gap, degree levels, the best-matching duty ↔
+experience sentence pairs, and template strengths/gaps generated only from these values (no LLM).
+Unit tests check that the explanation agrees with the feature row and that all evidence comes from
+the parsed text.
+
+**Real test example** (job `77f71b61c082`, 15 candidates; resume texts not reproduced):
+
+| | Candidate `0dee9d37d6b6` (true: No Fit) | Candidate `bdc270cf986a` (true: Good Fit) |
+|---|---|---|
+| Rank by BGE → by hybrid | **#1 → #4** | **#3 → #1** |
+| Semantic (scaled) | 0.896 | 0.803 |
+| Required skills | **0 of 1: missing Agile** | 1 of 1: Agile |
+| Preferred skills | 0 of 3 (missing Jira, Oracle Database, SQL) | 2 of 3 (Oracle Database, SQL) |
+| Experience | job states no years → not scored | job states no years → not scored |
+| Hybrid score | 0.654 | 0.796 |
+| Generated gaps | "0 of 1 required skills found; missing: Agile" | none |
+
+The requirement evidence for Agile is the job's own sentence "Must have experience working in an
+Agile environment." Another test pair (`1d07257e881a`, true No Fit) gets the gaps "missing: Angular"
+and "Estimated experience 0.5 years is below the 7 years requested".
+
+### 12. Limitations
+
+- **Unstable gains:** see point 8. The main result needs cross-validation.
+- **Extraction errors remain.** Seen while preparing the example above, i.e. after the test run, so
+  deliberately **not** fixed to avoid tuning on test: in "RequiredSQL Experience8" the glued
+  "Required" is not recognised, so SQL was labelled *preferred*. All-caps words glued together
+  ("SQLExcel") are missed. Generic "Qualifications" sections are treated as required.
+- **Taxonomy coverage:** 178 skills, mostly tech and finance. Skills outside it are invisible, and
+  soft skills are excluded by design.
+- **Experience is approximate:** "Present" undercounts current roles, year-only ranges are coarse,
+  and relevant (domain-specific) experience is not separated from total experience.
+- **Hand-set weights:** six pre-declared linear weightings; the features may interact non-linearly.
+- **Education** is level-only and diagnostic; field of study is not matched.
+- **Fairness:** no protected or personal attributes are extracted or used (no name, age, gender,
+  nationality, address, photo, marital status). The features are skills, years, degree level and
+  duty text. Degree requirements can still carry indirect bias, which is one reason education is
+  kept out of the score.
