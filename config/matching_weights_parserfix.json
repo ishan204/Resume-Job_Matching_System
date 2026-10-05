@@ -1,0 +1,32 @@
+{
+  "selected": "B_semantic_heavy",
+  "weights": {
+    "semantic_similarity": 0.6,
+    "required_skill_coverage": 0.15,
+    "preferred_skill_coverage": 0.05,
+    "experience_match": 0.1,
+    "responsibility_similarity": 0.1
+  },
+  "scaler": {
+    "semantic_similarity": [
+      0.4734162185614556,
+      0.7610766535756525
+    ],
+    "responsibility_similarity": [
+      0.4580958907626361,
+      0.7102980666181556
+    ]
+  },
+  "preferred_alpha": 0.5,
+  "selection_metric": "ndcg@10",
+  "selected_on": "validation",
+  "candidates_evaluated": 6,
+  "validation_metrics": {
+    "mrr": 0.770544,
+    "map": 0.740324,
+    "ndcg@5": 0.750399,
+    "ndcg@10": 0.809293,
+    "p@1": 0.602484,
+    "p@5": 0.547723
+  }
+}
