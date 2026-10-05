@@ -21,7 +21,7 @@ def _raw(n_resumes=40, jobs_per_resume=3):
 
 
 def test_clean_text():
-    assert clean_text("  a b\n\n c\t") == "a b c"
+    assert clean_text("  a\u00a0b\n\n c\t") == "a b c"
     assert clean_text(None) == ""
 
 

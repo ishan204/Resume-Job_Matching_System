@@ -7,3 +7,4 @@ requires-python = ">=3.11"
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = ["integration: loads the real BGE model (opt-in: RUN_INTEGRATION=1)"]

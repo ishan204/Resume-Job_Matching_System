@@ -9,6 +9,8 @@ import joblib
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from ml.models.text import normalize
+
 MODEL_NAME = "tfidf"
 DEFAULT_PARAMS = {"ngram_range": (1, 2), "min_df": 2, "max_df": 0.95, "sublinear_tf": True}
 
@@ -16,19 +18,11 @@ DEFAULT_PARAMS = {"ngram_range": (1, 2), "min_df": 2, "max_df": 0.95, "sublinear
 # or single characters (c, r). sklearn's default pattern would turn "C++" into nothing useful.
 TOKEN_PATTERN = r"(?u)\b\w[\w+#.]*[\w+#]|\b\w\b"
 
-# Source text glues section headings to the next word ("SkillsPython", "SummaryHighly").
-# Only these known headings are split; a general camel-case split would break JavaScript, PowerPoint.
-_GLUED_HEADING = re.compile(
-    r"\b(Summary|Skills|Highlights|Experience|Education|Qualifications|"
-    r"Accomplishments|Certifications|Projects|Interests)(?=[A-Z])")
-_NOISE = re.compile(r"[�​•▪●·*|]")  # replacement char, zero-width space, bullets
-_SENTENCE_DOT = re.compile(r"\.(?!\w)")                            # "python." -> "python", keeps "node.js"
+_SENTENCE_DOT = re.compile(r"\.(?!\w)")  # "python." -> "python", keeps "node.js"
 
 
 def preprocess(text: str) -> str:
-    text = _NOISE.sub(" ", str(text))
-    text = _GLUED_HEADING.sub(r"\1 ", text)
-    text = _SENTENCE_DOT.sub(" ", text.lower())
+    text = _SENTENCE_DOT.sub(" ", normalize(text).lower())
     return re.sub(r"\s+", " ", text).strip()
 
 

@@ -85,3 +85,27 @@ def test_reference_baselines_are_seeded():
     a, b = reference_baselines(df, seed=1, n_shuffles=20), reference_baselines(df, seed=1, n_shuffles=20)
     assert a == b
     assert a["always_no_fit"]["accuracy"] == pytest.approx((df["label_id"] == 0).mean())
+
+
+def test_comparison_requires_same_candidate_groups(tmp_path, monkeypatch):
+    import json
+    import ml.evaluation.compare as compare
+    monkeypatch.setattr(compare, "RESULTS_DIR", tmp_path)
+    ref = {"random_ranking": {k: 0.5 for k in compare.RANKING}}
+
+    def write(name, mrr, pairs=10, ref=ref):
+        m = {"pairs_scored": pairs, "chance_reference": ref,
+             "ranking": {"jobs_eligible": 3, "jobs_binary_eligible": 2, **{k: mrr for k in compare.RANKING}},
+             "classification": {"accuracy": 0.5, "macro_f1": 0.4}}
+        (tmp_path / f"{name}_test_metrics.json").write_text(json.dumps(m))
+
+    write("a", 0.6)
+    write("b", 0.75)
+    df = compare.comparison(["a", "b"])
+    assert list(df.index) == ["random_ordering", "a", "b"]
+    assert df.loc["b", "delta_mrr"] == pytest.approx(0.15)
+    assert df.loc["b", "rel_mrr_%"] == pytest.approx(25.0)
+
+    write("c", 0.7, pairs=9)
+    with pytest.raises(ValueError):
+        compare.comparison(["a", "c"])

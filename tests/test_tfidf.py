@@ -20,7 +20,7 @@ def _matcher():
 
 
 def test_preprocessing_is_deterministic_and_conservative():
-    raw = "SkillsPython, C++, C#  and Node.js • JavaScript� developer."
+    raw = "SkillsPython, C++, C#  and Node.js \u2022 JavaScript\ufffd developer."
     out = preprocess(raw)
     assert out == preprocess(raw)
     assert out == "skills python, c++, c# and node.js javascript developer"
