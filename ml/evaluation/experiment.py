@@ -22,6 +22,7 @@ from ml.config import (DATA_SPLITS, DATASET_NAME, DATASET_REVISION, EXPERIMENTS_
 from ml.dataset.split import load_splits
 from ml.evaluation.metrics import (apply_thresholds, classification_metrics, fit_thresholds,
                                    ranking_metrics, reference_baselines)
+from ml.models.hybrid import COMPONENTS, HybridMatcher
 from ml.models.semantic import SemanticMatcher
 from ml.models.tfidf import TOKEN_PATTERN, TFIDFMatcher
 
@@ -77,7 +78,27 @@ def describe_semantic(m: SemanticMatcher) -> dict:
                          "torch": torch.__version__}}
 
 
-MODELS = {"tfidf": (build_tfidf, describe_tfidf), "semantic": (build_semantic, describe_semantic)}
+def build_hybrid(train: pd.DataFrame, params: dict) -> HybridMatcher:
+    """Weights and scaling come from the frozen validation selection (ml/evaluation/hybrid_select.py)."""
+    sem = json.loads((EXPERIMENTS_DIR / f"{params['semantic_config']}.json").read_text())
+    sem.pop("model", None)
+    frozen = json.loads((ROOT / params["weights_file"]).read_text())
+    model = HybridMatcher(build_semantic(train, sem), weights=frozen["weights"], scaler=frozen["scaler"],
+                          alpha=frozen["preferred_alpha"]).fit()
+    model.selection = frozen
+    return model
+
+
+def describe_hybrid(m: HybridMatcher) -> dict:
+    sel = m.selection
+    return {"components": COMPONENTS, "weights": m.weights, "scaler": m.scaler, "preferred_alpha": m.alpha,
+            "selected_config": sel["selected"], "selected_on": sel["selected_on"],
+            "selection_metric": sel["selection_metric"], "taxonomy_skills": len(m.extractor.category),
+            "semantic": describe_semantic(m.semantic)}
+
+
+MODELS = {"tfidf": (build_tfidf, describe_tfidf), "semantic": (build_semantic, describe_semantic),
+          "hybrid": (build_hybrid, describe_hybrid)}
 
 
 def run(name: str, splits: dict[str, pd.DataFrame], params: dict,
@@ -91,7 +112,12 @@ def run(name: str, splits: dict[str, pd.DataFrame], params: dict,
     for split in eval_splits:  # validation first: thresholds are frozen before test is scored
         df = splits[split]
         pred = df[ID_COLUMNS].copy()
-        pred[score_col] = model.score_pairs(df["resume"], df["job_description"])
+        if hasattr(model, "pair_features"):  # structured, label-free features go into the prediction file
+            feats = model.pair_features(df["resume"], df["job_description"])
+            pred[score_col] = feats.pop("score").to_numpy()
+            pred = pd.concat([pred, feats.set_index(pred.index)], axis=1)
+        else:
+            pred[score_col] = model.score_pairs(df["resume"], df["job_description"])
         if split == "validation":
             thresholds = fit_thresholds(pred[score_col], pred["label_id"])
         pred["predicted_label_id"] = apply_thresholds(pred[score_col], thresholds)

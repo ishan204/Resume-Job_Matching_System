@@ -1,6 +1,8 @@
 """Comparison table built only from saved metrics files (nothing is recomputed).
 
-    python -m ml.evaluation.compare tfidf semantic        -> results/model_comparison.csv
+    python -m ml.evaluation.compare tfidf semantic hybrid
+        -> results/model_comparison.csv (absolute + deltas vs the first model)
+        -> results/model_deltas.csv     (every model minus every earlier one, incl. random)
 
 Rows: random-ordering reference, then each config. Delta columns compare every model with the
 first one listed (the baseline). Differences are descriptive; no significance test is implied.
@@ -45,13 +47,23 @@ def comparison(configs: list[str], split: str = "test") -> pd.DataFrame:
     return df
 
 
+def pairwise_deltas(df: pd.DataFrame) -> pd.DataFrame:
+    """Every later row minus every earlier row (incl. random), for the ranking metrics."""
+    names = list(df.index)
+    rows = [{"comparison": f"{b} - {a}", **{k: round(df.loc[b, k] - df.loc[a, k], 6) for k in RANKING}}
+            for i, b in enumerate(names) for a in names[:i]]
+    return pd.DataFrame(rows)
+
+
 def main(configs: list[str]):
     df = comparison(configs)
     df.to_csv(RESULTS_DIR / "model_comparison.csv")
+    deltas = pairwise_deltas(df)
+    deltas.to_csv(RESULTS_DIR / "model_deltas.csv", index=False)
     with pd.option_context("display.width", 200, "display.max_columns", 50):
         print(df[RANKING + CLASSIFICATION].round(4))
-        print(df.filter(like="delta_").dropna(how="all").round(4))
+        print(deltas.round(4).to_string(index=False))
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:] or ["tfidf", "semantic"])
+    main(sys.argv[1:] or ["tfidf", "semantic", "hybrid"])

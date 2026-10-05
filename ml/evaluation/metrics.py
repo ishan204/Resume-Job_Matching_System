@@ -9,7 +9,7 @@ descending; ties are broken by resume_id so the order is deterministic.
 """
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_recall_fscore_support
+from sklearn.metrics import accuracy_score, confusion_matrix, precision_recall_fscore_support
 
 from ml.config import LABELS
 
@@ -92,6 +92,19 @@ def apply_thresholds(scores, thresholds) -> np.ndarray:
     return np.digitize(scores, thresholds)
 
 
+def macro_f1(labels, preds) -> float:
+    """Same value as sklearn f1_score(average="macro", zero_division=0) — per label
+    2*TP / (true + predicted), averaged over labels present in either array — but ~50x faster,
+    which matters because threshold fitting evaluates ~5,000 threshold pairs."""
+    labels, preds = np.asarray(labels), np.asarray(preds)
+    scores = []
+    for c in np.union1d(labels, preds):
+        tp = np.sum((labels == c) & (preds == c))
+        denom = np.sum(labels == c) + np.sum(preds == c)
+        scores.append(2 * tp / denom if denom else 0.0)
+    return float(np.mean(scores))
+
+
 def fit_thresholds(scores, labels, n_grid=99) -> list[float]:
     """Choose t1 < t2 from score percentiles maximising macro F1. Call on VALIDATION only."""
     scores, labels = np.asarray(scores), np.asarray(labels)
@@ -99,7 +112,7 @@ def fit_thresholds(scores, labels, n_grid=99) -> list[float]:
     best, best_f1 = None, -1.0
     for i, t1 in enumerate(grid):
         for t2 in grid[i + 1:]:
-            f1 = f1_score(labels, apply_thresholds(scores, [t1, t2]), average="macro", zero_division=0)
+            f1 = macro_f1(labels, apply_thresholds(scores, [t1, t2]))
             if f1 > best_f1:  # strict > keeps the first best pair: deterministic
                 best, best_f1 = [float(t1), float(t2)], f1
     return best

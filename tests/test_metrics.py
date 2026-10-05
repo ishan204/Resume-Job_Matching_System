@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 from sklearn.metrics import average_precision_score, ndcg_score
 
-from ml.evaluation.metrics import (apply_thresholds, average_precision, classification_metrics,
+from ml.evaluation.metrics import (apply_thresholds, macro_f1, average_precision, classification_metrics,
                                    fit_thresholds, ndcg_at_k, precision_at_k, ranking_metrics,
                                    reciprocal_rank, reference_baselines)
 
@@ -109,3 +109,27 @@ def test_comparison_requires_same_candidate_groups(tmp_path, monkeypatch):
     write("c", 0.7, pairs=9)
     with pytest.raises(ValueError):
         compare.comparison(["a", "c"])
+
+
+def test_fast_macro_f1_matches_sklearn_exactly():
+    from sklearn.metrics import f1_score
+    rng = np.random.default_rng(0)
+    for _ in range(200):
+        y, p = rng.integers(0, 3, 50), rng.integers(0, 3, 50)
+        p[rng.random(50) < 0.3] = 0                      # include absent-class / zero-division cases
+        assert macro_f1(y, p) == f1_score(y, p, average="macro", zero_division=0)
+
+
+def test_pairwise_deltas_and_paired_bootstrap():
+    import ml.evaluation.compare as compare
+    from ml.evaluation.significance import paired_bootstrap
+    df = pd.DataFrame({k: [0.5, 0.6, 0.8] for k in compare.RANKING}, index=["random_ordering", "a", "b"])
+    d = compare.pairwise_deltas(df).set_index("comparison")
+    assert list(d.index) == ["a - random_ordering", "b - random_ordering", "b - a"]
+    assert d.loc["b - a", "mrr"] == pytest.approx(0.2)
+    a = pd.Series([0.5, 0.6, 0.7, 0.4] * 10, index=[f"j{i}" for i in range(40)])
+    better = paired_bootstrap(a, a + 0.1, n=2000)
+    assert better["mean_diff"] == pytest.approx(0.1) and better["significant_5pct"]
+    same = paired_bootstrap(a, a, n=2000)
+    assert same["mean_diff"] == 0 and not same["significant_5pct"]
+    assert paired_bootstrap(a, a + 0.1, n=2000) == better  # seeded
