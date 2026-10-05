@@ -507,6 +507,11 @@ back into any decision.
 
 Row A reproduces the Phase 4 semantic results exactly on both splits (consistency check).
 
+**Reproducibility: PASS.** The whole Phase 5 chain (validation selection → test run → test ablation)
+was run a second time. The frozen weights, weight comparison, both ablations and both prediction files
+were byte-identical, so the per-job rankings are identical too. The metrics files were identical
+apart from cache counters.
+
 ### Results: Random vs TF-IDF vs BGE vs Hybrid (test, executed 2026-10-06)
 
 Same 1,191 pairs, same 157 rankable jobs (154 for MRR/MAP/P@k), same metric code for every model.
