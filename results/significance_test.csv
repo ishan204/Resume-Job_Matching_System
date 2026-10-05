@@ -1,0 +1,13 @@
+comparison,metric,n_jobs,mean_diff,ci95_low,ci95_high,p_two_sided,significant_5pct
+semantic - tfidf,ndcg@10,157,0.02864,0.001364,0.056369,0.041,True
+semantic - tfidf,mrr,154,0.023207,-0.025216,0.072186,0.3504,False
+semantic - tfidf,map,154,0.035172,0.000115,0.069301,0.0496,True
+semantic - tfidf,ndcg@5,157,0.040364,0.010342,0.07169,0.0094,True
+hybrid - tfidf,ndcg@10,157,0.05143,0.026229,0.077539,0.0002,True
+hybrid - tfidf,mrr,154,0.070284,0.025216,0.115956,0.0024,True
+hybrid - tfidf,map,154,0.066896,0.033951,0.098955,0.0002,True
+hybrid - tfidf,ndcg@5,157,0.074817,0.045304,0.10649,0.0,True
+hybrid - semantic,ndcg@10,157,0.02279,0.007378,0.039213,0.0038,True
+hybrid - semantic,mrr,154,0.047078,0.015152,0.079545,0.0036,True
+hybrid - semantic,map,154,0.031723,0.011819,0.052415,0.0014,True
+hybrid - semantic,ndcg@5,157,0.034453,0.016973,0.053144,0.0002,True
