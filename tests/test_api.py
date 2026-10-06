@@ -219,6 +219,8 @@ def test_research_endpoints_serve_saved_results(client):
     comp = pd.read_csv(RESULTS_DIR / "final_model_comparison.csv").set_index("model")
     s = client.get("/api/research/summary").json()
     assert s["dataset"]["pairs"] == 7987 and s["dataset"]["no_resume_overlap_between_splits"]
+    assert s["dataset"]["raw_pairs"] == 8000 and s["repeated_evaluation"]["repetitions"] == 5
+    assert s["dataset"]["original_split_leakage"] == json.loads((RESULTS_DIR / "original_split_leakage.json").read_text())
     assert s["headline"]["semantic"]["test_ndcg@10"] == pytest.approx(comp.loc["semantic", "test_ndcg@10"])
     assert s["hybrid_vs_semantic_repeated"]["splits_positive"] == 5
     assert s["limitations"]

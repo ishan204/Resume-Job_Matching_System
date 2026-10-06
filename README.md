@@ -67,7 +67,7 @@ python -m ml.evaluation.significance tfidf semantic hybrid
 | 5 Skill-Aware Hybrid (student innovation) | done — test NDCG@10 0.8459, MRR 0.8341, macro F1 0.4386; gain over BGE significant on test but not replicated on validation |
 | 6 Evaluation & robustness | done — across 5 repeated grouped splits hybrid > BGE in 5/5 (NDCG@10 +0.010, 95% CI [+0.002, +0.019]); see [docs/evaluation.md](docs/evaluation.md) |
 | 7 FastAPI backend | done — `uvicorn backend.app.main:app --reload`; contract in [docs/api.md](docs/api.md) |
-| 8– | frontend: pending |
+| 8 React frontend | done — `npm --prefix frontend run dev` (with the backend running); see below |
 
 Results are added here only after experiments are actually run.
 
@@ -80,3 +80,17 @@ uvicorn backend.app.main:app --reload
 Open http://127.0.0.1:8000/docs. Endpoints, examples and error formats are in [docs/api.md](docs/api.md).
 The API serves the frozen research models (TF-IDF, BGE, Skill-Aware Hybrid) and reads the committed
 research results. It never re-runs experiments.
+
+## Frontend (demo)
+
+```bash
+uvicorn backend.app.main:app --port 8000      # terminal 1 (loads models, ~10-30 s)
+npm --prefix frontend install                  # first time only
+npm --prefix frontend run dev                  # terminal 2 -> http://localhost:5173
+```
+
+React + TypeScript + Vite + Recharts. Pages: Dashboard, Match Analysis, Model Comparison, Research,
+Dataset & Methodology, About / Limitations. Demo flow: Match Analysis -> Load Demo -> Analyze Match ->
+Compare Models -> Research. The frontend is a pure API client: every score and research number comes
+from the backend. Tests: `npm --prefix frontend test` (mocked with real captured API responses);
+production build: `npm --prefix frontend run build`.

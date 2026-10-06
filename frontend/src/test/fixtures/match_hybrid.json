@@ -1,0 +1,110 @@
+{
+ "model": "hybrid",
+ "score": 0.879478,
+ "category": "Strong match",
+ "thresholds": [
+  0.51834,
+  0.664216
+ ],
+ "validation_percentile": 98.1,
+ "components": {
+  "semantic_score": 1.0,
+  "required_skill_coverage": 0.5714285714285714,
+  "preferred_skill_coverage": 0.0,
+  "experience_match": 1.0,
+  "responsibility_similarity": 0.937635572786296
+ },
+ "matched_required_skills": [
+  "Python",
+  "SQL",
+  "Statistics",
+  "Tableau"
+ ],
+ "missing_required_skills": [
+  "AWS",
+  "Data Analysis",
+  "Power BI"
+ ],
+ "matched_preferred_skills": [],
+ "missing_preferred_skills": [
+  "Airflow",
+  "Snowflake"
+ ],
+ "experience": {
+  "candidate_years": 6.33,
+  "source": "dates",
+  "required_years": 5.0,
+  "gap_years": 0.0,
+  "requirement_evidence": [
+   "5+ years of experience in data analysis."
+  ]
+ },
+ "responsibility_similarity": 0.937635572786296,
+ "explanation": {
+  "summary": "Weighted average of the available components (semantic similarity, required and preferred skill coverage, experience match, responsibility alignment); components with nothing to measure are left out.",
+  "weights": {
+   "semantic_similarity": 0.6,
+   "required_skill_coverage": 0.15,
+   "preferred_skill_coverage": 0.05,
+   "experience_match": 0.1,
+   "responsibility_similarity": 0.1
+  },
+  "components_used": [
+   "semantic_similarity",
+   "required_skill_coverage",
+   "preferred_skill_coverage",
+   "experience_match",
+   "responsibility_similarity"
+  ],
+  "strengths": [
+   "Meets the experience requirement (6.3 vs 5 years)",
+   "Strong similarity between the overall profile and the job",
+   "Strong similarity between the past duties and the job"
+  ],
+  "gaps": [
+   "4 of 7 required skills found; missing: AWS, Data Analysis, Power BI"
+  ],
+  "uncertain_job_skills": [
+   "Data Visualization"
+  ],
+  "skill_evidence": {
+   "Python": "Skills Python, SQL, Pandas, Tableau, Microsoft Excel, Statistics, Git Experience Data Analyst, Northwind Retail, 03/2019 to 06/2023 Built weekly SQL and Python reports for the sales leadership team.",
+   "SQL": "Skills Python, SQL, Pandas, Tableau, Microsoft Excel, Statistics, Git Experience Data Analyst, Northwind Retail, 03/2019 to 06/2023 Built weekly SQL and Python reports for the sales leadership team.",
+   "Statistics": "Skills Python, SQL, Pandas, Tableau, Microsoft Excel, Statistics, Git Experience Data Analyst, Northwind Retail, 03/2019 to 06/2023 Built weekly SQL and Python reports for the sales leadership team.",
+   "Tableau": "Skills Python, SQL, Pandas, Tableau, Microsoft Excel, Statistics, Git Experience Data Analyst, Northwind Retail, 03/2019 to 06/2023 Built weekly SQL and Python reports for the sales leadership team."
+  },
+  "requirement_evidence": {
+   "SQL": "Strong SQL and Python skills.",
+   "Python": "Strong SQL and Python skills.",
+   "Data Analysis": "Required Qualifications 5+ years of experience in data analysis.",
+   "Tableau": "Experience with Tableau or Power BI.",
+   "Power BI": "Experience with Tableau or Power BI.",
+   "AWS": "Must have AWS experience.",
+   "Statistics": "Bachelor's degree in Statistics, Mathematics or a related field.",
+   "Airflow": "Preferred Qualifications Experience with Airflow and Snowflake is a plus.",
+   "Snowflake": "Preferred Qualifications Experience with Airflow and Snowflake is a plus."
+  },
+  "responsibility_evidence": [
+   {
+    "job_responsibility": "Build and maintain dashboards that track sales and operational performance.",
+    "candidate_experience": "Created Tableau dashboards that track revenue, returns and inventory across 40 stores.",
+    "similarity": 0.7462
+   },
+   {
+    "job_responsibility": "Present findings and recommendations to business leaders.",
+    "candidate_experience": "Presented monthly findings to managers and recommended changes to pricing.",
+    "similarity": 0.7329
+   },
+   {
+    "job_responsibility": "Write SQL queries and Python scripts to prepare data for analysis.",
+    "candidate_experience": "Data Analyst, Northwind Retail, 03/2019 to 06/2023 Built weekly SQL and Python reports for the sales leadership team.",
+    "similarity": 0.6504
+   }
+  ],
+  "education": {
+   "candidate_level": 3,
+   "required_level": 3
+  }
+ },
+ "disclaimer": "This system is an academic research prototype and should not be used as the sole basis for employment decisions."
+}

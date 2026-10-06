@@ -7,12 +7,15 @@ import pandas as pd
 from ml.config import RESULTS_DIR
 
 LIMITATIONS = [
-    "Small dataset: 643 unique resumes and 351 unique jobs from one public dataset with undocumented labelling.",
-    "The hybrid's ranking gain over BGE is consistent across 5 grouped splits but small (about +0.01 NDCG@10).",
-    "Required-skill coverage improves explanations but not ranking; the best hybrid weighting varies by split.",
-    "Classification (Strong / Potential / Weak) is secondary and not consistently improved by the hybrid.",
-    "Extraction is rule-based: a fixed 178-skill taxonomy, approximate experience dates, no soft skills.",
-    "Scores are similarities, not probabilities, and must not be the sole basis for hiring decisions.",
+    "Only one primary dataset (Resume-Job Description Fit); its labelling process is undocumented.",
+    "Small scale: 643 unique resumes and 351 unique jobs.",
+    "Ranking gains are small: the hybrid beats BGE by about +0.01 NDCG@10 on average across repeated splits.",
+    "Classification (macro F1) does not improve on average: BGE has the highest repeated-split macro F1.",
+    "Required-skill coverage does not improve ranking in any analysis; its value is in the explanation.",
+    "Extraction errors remain possible: rule-based parsing, a fixed 178-skill taxonomy, no soft skills.",
+    "Experience years are approximate estimates from employment date ranges.",
+    "Results may not generalise beyond this dataset.",
+    "Scores are model scores, not probabilities, and must not be the sole basis for hiring decisions.",
 ]
 
 
@@ -56,16 +59,29 @@ def summary() -> dict:
     comp = _csv("final_model_comparison.csv").set_index("model")
     diff = _csv("repeated_grouped_differences.csv")
     hb = diff[(diff.comparison == "hybrid - semantic") & (diff.metric == "ndcg@10")].iloc[0]
-    headline = {m: {"test_ndcg@10": comp.loc[m, "test_ndcg@10"], "test_mrr": comp.loc[m, "test_mrr"],
-                    "repeated_mean_ndcg@10": comp.loc[m, "repeated_mean_ndcg@10"] if
-                    pd.notna(comp.loc[m].get("repeated_mean_ndcg@10")) else None}
+    def val(m, col):
+        v = comp.loc[m].get(col)
+        return None if pd.isna(v) else float(v)
+    headline = {m: {"test_ndcg@10": val(m, "test_ndcg@10"), "test_mrr": val(m, "test_mrr"),
+                    "repeated_mean_ndcg@10": val(m, "repeated_mean_ndcg@10"),
+                    "repeated_mean_macro_f1": val(m, "repeated_mean_macro_f1")}
                 for m in comp.index}
+    design = _json("repeated_grouped_meta.json")
     return {
         "dataset": {"name": "Resume-Job Description Fit (cnamuangtoun/resume-job-description-fit)",
-                    "pairs": stats["total_examples"], "unique_resumes": stats["unique_resumes"],
+                    "raw_pairs": stats["prepare"]["raw_rows"], "pairs": stats["total_examples"],
+                    "label_counts": stats["prepare"]["label_counts"],
+                    "removed": {"exact_duplicates": stats["prepare"]["dropped_exact_duplicates"],
+                                "conflicting_label_pairs": stats["prepare"]["dropped_conflicting_pairs"],
+                                "empty": stats["prepare"]["dropped_empty"]},
+                    "unique_resumes": stats["unique_resumes"],
                     "unique_jobs": stats["unique_jobs"],
                     "splits": {k: v["rows"] for k, v in stats["splits"].items()},
-                    "no_resume_overlap_between_splits": stats["no_resume_overlap"]},
+                    "no_resume_overlap_between_splits": stats["no_resume_overlap"],
+                    "original_split_leakage": _json("original_split_leakage.json")},
+        "repeated_evaluation": {"repetitions": len(design["repetitions"]),
+                                "all_leakage_free": design["all_repetitions_leakage_free"],
+                                "test_jobs_eligible": sum(r["test_jobs_eligible"] for r in design["repetitions"])},
         "models": 3, "student_innovation": "Skill-Aware Hybrid",
         "headline": headline,
         "hybrid_vs_semantic_repeated": {"mean_ndcg@10_diff": hb.mean_diff, "ci95": [hb.ci95_low, hb.ci95_high],

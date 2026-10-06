@@ -1,0 +1,105 @@
+{
+ "dataset": {
+  "name": "Resume-Job Description Fit (cnamuangtoun/resume-job-description-fit)",
+  "raw_pairs": 8000,
+  "pairs": 7987,
+  "label_counts": {
+   "No Fit": 3993,
+   "Potential Fit": 1998,
+   "Good Fit": 1996
+  },
+  "removed": {
+   "exact_duplicates": 1,
+   "conflicting_label_pairs": 12,
+   "empty": 0
+  },
+  "unique_resumes": 643,
+  "unique_jobs": 351,
+  "splits": {
+   "train": 5537,
+   "validation": 1259,
+   "test": 1191
+  },
+  "no_resume_overlap_between_splits": true,
+  "original_split_leakage": {
+   "original_test_resumes": 477,
+   "also_in_original_train": 476,
+   "share": 0.9979
+  }
+ },
+ "repeated_evaluation": {
+  "repetitions": 5,
+  "all_leakage_free": true,
+  "test_jobs_eligible": 809
+ },
+ "models": 3,
+ "student_innovation": "Skill-Aware Hybrid",
+ "headline": {
+  "random": {
+   "test_ndcg@10": 0.758163,
+   "test_mrr": 0.714063,
+   "repeated_mean_ndcg@10": 0.773181,
+   "repeated_mean_macro_f1": null
+  },
+  "tfidf": {
+   "test_ndcg@10": 0.794462,
+   "test_mrr": 0.763806,
+   "repeated_mean_ndcg@10": 0.819195,
+   "repeated_mean_macro_f1": 0.405177
+  },
+  "semantic": {
+   "test_ndcg@10": 0.823101,
+   "test_mrr": 0.787013,
+   "repeated_mean_ndcg@10": 0.832166,
+   "repeated_mean_macro_f1": 0.412157
+  },
+  "hybrid": {
+   "test_ndcg@10": 0.845891,
+   "test_mrr": 0.834091,
+   "repeated_mean_ndcg@10": null,
+   "repeated_mean_macro_f1": null
+  },
+  "hybrid_parserfix": {
+   "test_ndcg@10": 0.841898,
+   "test_mrr": 0.827597,
+   "repeated_mean_ndcg@10": 0.842549,
+   "repeated_mean_macro_f1": 0.406247
+  }
+ },
+ "hybrid_vs_semantic_repeated": {
+  "mean_ndcg@10_diff": 0.010383,
+  "ci95": [
+   0.001662,
+   0.019353
+  ],
+  "splits_positive": 5,
+  "splits": 5
+ },
+ "explainability_check": {
+  "config": "hybrid",
+  "pairs_checked": 1191,
+  "passed": {
+   "missing_absent": 1191,
+   "matched_present": 1191,
+   "matched_plus_missing_complete": 1191,
+   "experience_gap": 1191,
+   "responsibility_evidence_in_text": 1191,
+   "skill_evidence_in_text": 1191,
+   "score_recomposes": 1191,
+   "score_matches_saved": 1191
+  },
+  "all_checks_pass_for_all_pairs": true
+ },
+ "limitations": [
+  "Only one primary dataset (Resume-Job Description Fit); its labelling process is undocumented.",
+  "Small scale: 643 unique resumes and 351 unique jobs.",
+  "Ranking gains are small: the hybrid beats BGE by about +0.01 NDCG@10 on average across repeated splits.",
+  "Classification (macro F1) does not improve on average: BGE has the highest repeated-split macro F1.",
+  "Required-skill coverage does not improve ranking in any analysis; its value is in the explanation.",
+  "Extraction errors remain possible: rule-based parsing, a fixed 178-skill taxonomy, no soft skills.",
+  "Experience years are approximate estimates from employment date ranges.",
+  "Results may not generalise beyond this dataset.",
+  "Scores are model scores, not probabilities, and must not be the sole basis for hiring decisions."
+ ],
+ "details": "docs/evaluation.md"
+}

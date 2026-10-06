@@ -64,3 +64,9 @@ def test_grouped_split_has_no_resume_overlap():
     assert report["no_resume_overlap"]
     assert sum(len(s) for s in splits.values()) == len(df)
     assert grouped_split(df)["test"].equals(splits["test"])  # deterministic with fixed seed
+
+
+def test_original_split_leakage_counts_shared_resumes():
+    from ml.dataset.original_leakage import original_split_leakage
+    df = pd.DataFrame({"resume_id": ["a", "b", "c", "a", "d"], "original_split": ["train", "train", "train", "test", "test"]})
+    assert original_split_leakage(df) == {"original_test_resumes": 2, "also_in_original_train": 1, "share": 0.5}
