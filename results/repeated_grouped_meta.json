@@ -1,0 +1,63 @@
+{
+  "config": {
+    "n_folds": 20,
+    "test_folds": 3,
+    "validation_folds": 3,
+    "repetitions": 5,
+    "seed": 2026,
+    "tfidf_config": "tfidf",
+    "semantic_config": "semantic",
+    "hybrid_config": "hybrid_parserfix",
+    "bootstrap_resamples": 10000,
+    "random_shuffles": 200
+  },
+  "hybrid": {
+    "config": "hybrid_parserfix",
+    "glued_cues": true,
+    "selection_metric": "ndcg@10"
+  },
+  "repetitions": [
+    {
+      "repetition": 0,
+      "test": 1192,
+      "validation": 1206,
+      "train": 5589,
+      "test_jobs_eligible": 167,
+      "no_resume_overlap": true
+    },
+    {
+      "repetition": 1,
+      "test": 1206,
+      "validation": 1185,
+      "train": 5596,
+      "test_jobs_eligible": 178,
+      "no_resume_overlap": true
+    },
+    {
+      "repetition": 2,
+      "test": 1185,
+      "validation": 1189,
+      "train": 5613,
+      "test_jobs_eligible": 141,
+      "no_resume_overlap": true
+    },
+    {
+      "repetition": 3,
+      "test": 1189,
+      "validation": 1191,
+      "train": 5607,
+      "test_jobs_eligible": 168,
+      "no_resume_overlap": true
+    },
+    {
+      "repetition": 4,
+      "test": 1191,
+      "validation": 1199,
+      "train": 5597,
+      "test_jobs_eligible": 155,
+      "no_resume_overlap": true
+    }
+  ],
+  "total_pairs": 7987,
+  "all_repetitions_leakage_free": true
+}

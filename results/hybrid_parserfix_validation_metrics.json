@@ -1,0 +1,140 @@
+{
+  "model": "hybrid",
+  "split": "validation",
+  "pairs_scored": 1259,
+  "model_params": {
+    "components": [
+      "semantic_similarity",
+      "required_skill_coverage",
+      "preferred_skill_coverage",
+      "experience_match",
+      "responsibility_similarity"
+    ],
+    "weights": {
+      "semantic_similarity": 0.6,
+      "required_skill_coverage": 0.15,
+      "preferred_skill_coverage": 0.05,
+      "experience_match": 0.1,
+      "responsibility_similarity": 0.1
+    },
+    "scaler": {
+      "semantic_similarity": [
+        0.4734162185614556,
+        0.7610766535756525
+      ],
+      "responsibility_similarity": [
+        0.4580958907626361,
+        0.7102980666181556
+      ]
+    },
+    "preferred_alpha": 0.5,
+    "selected_config": "B_semantic_heavy",
+    "selected_on": "validation",
+    "selection_metric": "ndcg@10",
+    "taxonomy_skills": 178,
+    "glued_cues": true,
+    "semantic": {
+      "model_name": "BAAI/bge-base-en-v1.5",
+      "revision": "a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+      "device": "cpu",
+      "batch_size": 16,
+      "max_seq_length": 512,
+      "long_text": "truncate",
+      "query_instruction": null,
+      "embedding_dim": 768,
+      "normalized_embeddings": true,
+      "fine_tuned": false,
+      "cache_file": "semantic_2b3faa5743f6.npz",
+      "encoding_stats": {
+        "texts_requested": 6788,
+        "texts_encoded": 0,
+        "chunks_encoded": 0,
+        "reused_cached": 6788
+      },
+      "versions": {
+        "sentence_transformers": "6.1.0",
+        "torch": "2.14.1+cpu"
+      }
+    }
+  },
+  "ranking": {
+    "jobs_total": 302,
+    "jobs_eligible": 163,
+    "jobs_excluded": {
+      "single_candidate": 73,
+      "single_label": 66
+    },
+    "jobs_binary_eligible": 161,
+    "jobs_binary_trivial": 2,
+    "mrr": 0.770544,
+    "map": 0.740324,
+    "ndcg@5": 0.750399,
+    "ndcg@10": 0.809293,
+    "p@1": 0.602484,
+    "p@5": 0.547723
+  },
+  "classification": {
+    "thresholds": [
+      0.5183402966500671,
+      0.6642161051932904
+    ],
+    "threshold_source": "validation (macro-F1 grid over score percentiles)",
+    "accuracy": 0.498809,
+    "macro_precision": 0.437432,
+    "macro_recall": 0.430429,
+    "macro_f1": 0.425725,
+    "confusion_matrix": {
+      "labels": [
+        "No Fit",
+        "Potential Fit",
+        "Good Fit"
+      ],
+      "matrix": [
+        [
+          450,
+          115,
+          75
+        ],
+        [
+          112,
+          82,
+          56
+        ],
+        [
+          181,
+          92,
+          96
+        ]
+      ]
+    }
+  },
+  "chance_reference": {
+    "random_ranking": {
+      "n_shuffles": 200,
+      "seed": 42,
+      "mrr": 0.72263,
+      "map": 0.678111,
+      "ndcg@5": 0.699813,
+      "ndcg@10": 0.767404,
+      "p@1": 0.521801,
+      "p@5": 0.521176
+    },
+    "always_no_fit": {
+      "accuracy": 0.50834,
+      "macro_precision": 0.169447,
+      "macro_recall": 0.333333,
+      "macro_f1": 0.22468
+    }
+  },
+  "relevance": {
+    "graded": "No Fit=0, Potential Fit=1, Good Fit=2 (NDCG)",
+    "binary": "relevant = label > 0 (MRR, MAP, P@k)"
+  },
+  "dataset": {
+    "name": "cnamuangtoun/resume-job-description-fit",
+    "revision": "08978e21714984bb417547d2c0f9b477f5298163",
+    "seed": 42,
+    "split_sha256": "9e2c7aa0497031ad840b74de9ad8691c11781ef4cddb0cdda9d00b80000a6f04"
+  },
+  "config": "hybrid_parserfix"
+}

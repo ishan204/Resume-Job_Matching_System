@@ -1,0 +1,900 @@
+{
+  "dataset": {
+    "name": "cnamuangtoun/resume-job-description-fit",
+    "revision": "08978e21714984bb417547d2c0f9b477f5298163",
+    "split_seed": 42,
+    "stats": {
+      "seed": 42,
+      "total_examples": 7987,
+      "unique_resumes": 643,
+      "unique_jobs": 351,
+      "splits": {
+        "train": {
+          "rows": 5537,
+          "fraction": 0.6933,
+          "unique_resumes": 450,
+          "unique_jobs": 349,
+          "ranking_groups": 289,
+          "label_counts": {
+            "No Fit": 2705,
+            "Potential Fit": 1467,
+            "Good Fit": 1365
+          }
+        },
+        "validation": {
+          "rows": 1259,
+          "fraction": 0.1576,
+          "unique_resumes": 97,
+          "unique_jobs": 302,
+          "ranking_groups": 163,
+          "label_counts": {
+            "No Fit": 640,
+            "Good Fit": 369,
+            "Potential Fit": 250
+          }
+        },
+        "test": {
+          "rows": 1191,
+          "fraction": 0.1491,
+          "unique_resumes": 96,
+          "unique_jobs": 289,
+          "ranking_groups": 157,
+          "label_counts": {
+            "No Fit": 648,
+            "Potential Fit": 281,
+            "Good Fit": 262
+          }
+        }
+      },
+      "overlaps": {
+        "train/validation resume_id": 0,
+        "train/validation resume_group": 0,
+        "train/validation job_id": 300,
+        "train/validation resume_text": 0,
+        "train/test resume_id": 0,
+        "train/test resume_group": 0,
+        "train/test job_id": 288,
+        "train/test resume_text": 0,
+        "validation/test resume_id": 0,
+        "validation/test resume_group": 0,
+        "validation/test job_id": 259,
+        "validation/test resume_text": 0
+      },
+      "no_resume_overlap": true,
+      "prepare": {
+        "raw_rows": 8000,
+        "dropped_empty": 0,
+        "dropped_exact_duplicates": 1,
+        "dropped_conflicting_pairs": 12,
+        "rows": 7987,
+        "unique_resumes": 643,
+        "unique_jobs": 351,
+        "resume_groups": 593,
+        "resumes_in_multiple_pairs": 619,
+        "jobs_in_multiple_pairs": 348,
+        "near_duplicate_resumes_merged": 50,
+        "label_counts": {
+          "No Fit": 3993,
+          "Potential Fit": 1998,
+          "Good Fit": 1996
+        }
+      }
+    }
+  },
+  "protocol": "fit on train; thresholds, scaling and weights on validation; test scored once",
+  "models": {
+    "tfidf": {
+      "test": {
+        "ngram_range": [
+          1,
+          2
+        ],
+        "min_df": 2,
+        "max_df": 0.95,
+        "sublinear_tf": true,
+        "token_pattern": "(?u)\\b\\w[\\w+#.]*[\\w+#]|\\b\\w\\b",
+        "vocabulary_size": 68545,
+        "fit_corpus": "unique train resumes + unique train job descriptions"
+      }
+    },
+    "semantic": {
+      "test": {
+        "model_name": "BAAI/bge-base-en-v1.5",
+        "revision": "a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+        "device": "cpu",
+        "batch_size": 16,
+        "max_seq_length": 512,
+        "long_text": "truncate",
+        "query_instruction": null,
+        "embedding_dim": 768,
+        "normalized_embeddings": true,
+        "fine_tuned": false,
+        "cache_file": "semantic_2b3faa5743f6.npz",
+        "encoding_stats": {
+          "texts_requested": 4900,
+          "texts_encoded": 0,
+          "chunks_encoded": 0,
+          "reused_cached": 4900
+        },
+        "versions": {
+          "sentence_transformers": "6.1.0",
+          "torch": "2.14.1+cpu"
+        }
+      }
+    },
+    "hybrid": {
+      "test": {
+        "components": [
+          "semantic_similarity",
+          "required_skill_coverage",
+          "preferred_skill_coverage",
+          "experience_match",
+          "responsibility_similarity"
+        ],
+        "weights": {
+          "semantic_similarity": 0.6,
+          "required_skill_coverage": 0.15,
+          "preferred_skill_coverage": 0.05,
+          "experience_match": 0.1,
+          "responsibility_similarity": 0.1
+        },
+        "scaler": {
+          "semantic_similarity": [
+            0.4734162185614556,
+            0.7610766535756525
+          ],
+          "responsibility_similarity": [
+            0.4580958907626361,
+            0.7102980666181556
+          ]
+        },
+        "preferred_alpha": 0.5,
+        "selected_config": "B_semantic_heavy",
+        "selected_on": "validation",
+        "selection_metric": "ndcg@10",
+        "taxonomy_skills": 178,
+        "semantic": {
+          "model_name": "BAAI/bge-base-en-v1.5",
+          "revision": "a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+          "device": "cpu",
+          "batch_size": 16,
+          "max_seq_length": 512,
+          "long_text": "truncate",
+          "query_instruction": null,
+          "embedding_dim": 768,
+          "normalized_embeddings": true,
+          "fine_tuned": false,
+          "cache_file": "semantic_2b3faa5743f6.npz",
+          "encoding_stats": {
+            "texts_requested": 13194,
+            "texts_encoded": 1463,
+            "chunks_encoded": 1463,
+            "reused_cached": 11731
+          },
+          "versions": {
+            "sentence_transformers": "6.1.0",
+            "torch": "2.14.1+cpu"
+          }
+        }
+      }
+    },
+    "hybrid_parserfix": {
+      "test": {
+        "components": [
+          "semantic_similarity",
+          "required_skill_coverage",
+          "preferred_skill_coverage",
+          "experience_match",
+          "responsibility_similarity"
+        ],
+        "weights": {
+          "semantic_similarity": 0.6,
+          "required_skill_coverage": 0.15,
+          "preferred_skill_coverage": 0.05,
+          "experience_match": 0.1,
+          "responsibility_similarity": 0.1
+        },
+        "scaler": {
+          "semantic_similarity": [
+            0.4734162185614556,
+            0.7610766535756525
+          ],
+          "responsibility_similarity": [
+            0.4580958907626361,
+            0.7102980666181556
+          ]
+        },
+        "preferred_alpha": 0.5,
+        "selected_config": "B_semantic_heavy",
+        "selected_on": "validation",
+        "selection_metric": "ndcg@10",
+        "taxonomy_skills": 178,
+        "glued_cues": true,
+        "semantic": {
+          "model_name": "BAAI/bge-base-en-v1.5",
+          "revision": "a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+          "device": "cpu",
+          "batch_size": 16,
+          "max_seq_length": 512,
+          "long_text": "truncate",
+          "query_instruction": null,
+          "embedding_dim": 768,
+          "normalized_embeddings": true,
+          "fine_tuned": false,
+          "cache_file": "semantic_2b3faa5743f6.npz",
+          "encoding_stats": {
+            "texts_requested": 13194,
+            "texts_encoded": 1463,
+            "chunks_encoded": 1463,
+            "reused_cached": 11731
+          },
+          "versions": {
+            "sentence_transformers": "6.1.0",
+            "torch": "2.14.1+cpu"
+          }
+        }
+      }
+    }
+  },
+  "repeated_grouped": {
+    "config": {
+      "n_folds": 20,
+      "test_folds": 3,
+      "validation_folds": 3,
+      "repetitions": 5,
+      "seed": 2026,
+      "tfidf_config": "tfidf",
+      "semantic_config": "semantic",
+      "hybrid_config": "hybrid_parserfix",
+      "bootstrap_resamples": 10000,
+      "random_shuffles": 200
+    },
+    "hybrid": {
+      "config": "hybrid_parserfix",
+      "glued_cues": true,
+      "selection_metric": "ndcg@10"
+    },
+    "repetitions": [
+      {
+        "repetition": 0,
+        "test": 1192,
+        "validation": 1206,
+        "train": 5589,
+        "test_jobs_eligible": 167,
+        "no_resume_overlap": true
+      },
+      {
+        "repetition": 1,
+        "test": 1206,
+        "validation": 1185,
+        "train": 5596,
+        "test_jobs_eligible": 178,
+        "no_resume_overlap": true
+      },
+      {
+        "repetition": 2,
+        "test": 1185,
+        "validation": 1189,
+        "train": 5613,
+        "test_jobs_eligible": 141,
+        "no_resume_overlap": true
+      },
+      {
+        "repetition": 3,
+        "test": 1189,
+        "validation": 1191,
+        "train": 5607,
+        "test_jobs_eligible": 168,
+        "no_resume_overlap": true
+      },
+      {
+        "repetition": 4,
+        "test": 1191,
+        "validation": 1199,
+        "train": 5597,
+        "test_jobs_eligible": 155,
+        "no_resume_overlap": true
+      }
+    ],
+    "total_pairs": 7987,
+    "all_repetitions_leakage_free": true
+  },
+  "repeated_model_mapping": {
+    "random": "repeated 'random'",
+    "tfidf": "repeated 'tfidf'",
+    "semantic": "repeated 'semantic'",
+    "hybrid_parserfix": "repeated 'hybrid'"
+  },
+  "original_test_bootstrap": [
+    {
+      "comparison": "semantic - tfidf",
+      "metric": "ndcg@10",
+      "n_jobs": 157,
+      "mean_diff": 0.02864,
+      "ci95_low": 0.001364,
+      "ci95_high": 0.056369,
+      "p_two_sided": 0.041,
+      "significant_5pct": true
+    },
+    {
+      "comparison": "semantic - tfidf",
+      "metric": "mrr",
+      "n_jobs": 154,
+      "mean_diff": 0.023207,
+      "ci95_low": -0.025216,
+      "ci95_high": 0.072186,
+      "p_two_sided": 0.3504,
+      "significant_5pct": false
+    },
+    {
+      "comparison": "semantic - tfidf",
+      "metric": "map",
+      "n_jobs": 154,
+      "mean_diff": 0.035172,
+      "ci95_low": 0.000115,
+      "ci95_high": 0.069301,
+      "p_two_sided": 0.0496,
+      "significant_5pct": true
+    },
+    {
+      "comparison": "semantic - tfidf",
+      "metric": "ndcg@5",
+      "n_jobs": 157,
+      "mean_diff": 0.040364,
+      "ci95_low": 0.010342,
+      "ci95_high": 0.07169,
+      "p_two_sided": 0.0094,
+      "significant_5pct": true
+    },
+    {
+      "comparison": "hybrid - tfidf",
+      "metric": "ndcg@10",
+      "n_jobs": 157,
+      "mean_diff": 0.05143,
+      "ci95_low": 0.026229,
+      "ci95_high": 0.077539,
+      "p_two_sided": 0.0002,
+      "significant_5pct": true
+    },
+    {
+      "comparison": "hybrid - tfidf",
+      "metric": "mrr",
+      "n_jobs": 154,
+      "mean_diff": 0.070284,
+      "ci95_low": 0.025216,
+      "ci95_high": 0.115956,
+      "p_two_sided": 0.0024,
+      "significant_5pct": true
+    },
+    {
+      "comparison": "hybrid - tfidf",
+      "metric": "map",
+      "n_jobs": 154,
+      "mean_diff": 0.066896,
+      "ci95_low": 0.033951,
+      "ci95_high": 0.098955,
+      "p_two_sided": 0.0002,
+      "significant_5pct": true
+    },
+    {
+      "comparison": "hybrid - tfidf",
+      "metric": "ndcg@5",
+      "n_jobs": 157,
+      "mean_diff": 0.074817,
+      "ci95_low": 0.045304,
+      "ci95_high": 0.10649,
+      "p_two_sided": 0.0,
+      "significant_5pct": true
+    },
+    {
+      "comparison": "hybrid - semantic",
+      "metric": "ndcg@10",
+      "n_jobs": 157,
+      "mean_diff": 0.02279,
+      "ci95_low": 0.007378,
+      "ci95_high": 0.039213,
+      "p_two_sided": 0.0038,
+      "significant_5pct": true
+    },
+    {
+      "comparison": "hybrid - semantic",
+      "metric": "mrr",
+      "n_jobs": 154,
+      "mean_diff": 0.047078,
+      "ci95_low": 0.015152,
+      "ci95_high": 0.079545,
+      "p_two_sided": 0.0036,
+      "significant_5pct": true
+    },
+    {
+      "comparison": "hybrid - semantic",
+      "metric": "map",
+      "n_jobs": 154,
+      "mean_diff": 0.031723,
+      "ci95_low": 0.011819,
+      "ci95_high": 0.052415,
+      "p_two_sided": 0.0014,
+      "significant_5pct": true
+    },
+    {
+      "comparison": "hybrid - semantic",
+      "metric": "ndcg@5",
+      "n_jobs": 157,
+      "mean_diff": 0.034453,
+      "ci95_low": 0.016973,
+      "ci95_high": 0.053144,
+      "p_two_sided": 0.0002,
+      "significant_5pct": true
+    }
+  ],
+  "repeated_differences": [
+    {
+      "comparison": "hybrid - semantic",
+      "metric": "ndcg@10",
+      "mean_diff": 0.010383,
+      "std_diff": 0.007299,
+      "min_diff": 0.004828,
+      "max_diff": 0.022812,
+      "reps_positive": 5,
+      "n_repetitions": 5,
+      "ci95_low": 0.001662,
+      "ci95_high": 0.019353,
+      "ci_excludes_0": true,
+      "n_job_units": 809
+    },
+    {
+      "comparison": "hybrid - semantic",
+      "metric": "ndcg@5",
+      "mean_diff": 0.012597,
+      "std_diff": 0.008249,
+      "min_diff": 0.002884,
+      "max_diff": 0.024938,
+      "reps_positive": 5,
+      "n_repetitions": 5,
+      "ci95_low": 0.002468,
+      "ci95_high": 0.023125,
+      "ci_excludes_0": true,
+      "n_job_units": 809
+    },
+    {
+      "comparison": "hybrid - semantic",
+      "metric": "mrr",
+      "mean_diff": 0.017205,
+      "std_diff": 0.014057,
+      "min_diff": 0.003711,
+      "max_diff": 0.038639,
+      "reps_positive": 5,
+      "n_repetitions": 5,
+      "ci95_low": 0.000889,
+      "ci95_high": 0.033766,
+      "ci_excludes_0": true,
+      "n_job_units": 788
+    },
+    {
+      "comparison": "hybrid - semantic",
+      "metric": "map",
+      "mean_diff": 0.012192,
+      "std_diff": 0.008607,
+      "min_diff": 0.005924,
+      "max_diff": 0.027067,
+      "reps_positive": 5,
+      "n_repetitions": 5,
+      "ci95_low": 0.001096,
+      "ci95_high": 0.023434,
+      "ci_excludes_0": true,
+      "n_job_units": 788
+    },
+    {
+      "comparison": "hybrid - tfidf",
+      "metric": "ndcg@10",
+      "mean_diff": 0.023353,
+      "std_diff": 0.01889,
+      "min_diff": -0.004477,
+      "max_diff": 0.045015,
+      "reps_positive": 4,
+      "n_repetitions": 5,
+      "ci95_low": 0.01198,
+      "ci95_high": 0.034934,
+      "ci_excludes_0": true,
+      "n_job_units": 809
+    },
+    {
+      "comparison": "hybrid - tfidf",
+      "metric": "ndcg@5",
+      "mean_diff": 0.028553,
+      "std_diff": 0.021948,
+      "min_diff": 0.005479,
+      "max_diff": 0.055179,
+      "reps_positive": 5,
+      "n_repetitions": 5,
+      "ci95_low": 0.01469,
+      "ci95_high": 0.042378,
+      "ci_excludes_0": true,
+      "n_job_units": 809
+    },
+    {
+      "comparison": "hybrid - tfidf",
+      "metric": "mrr",
+      "mean_diff": 0.034964,
+      "std_diff": 0.019744,
+      "min_diff": 0.007091,
+      "max_diff": 0.054534,
+      "reps_positive": 5,
+      "n_repetitions": 5,
+      "ci95_low": 0.014874,
+      "ci95_high": 0.055131,
+      "ci_excludes_0": true,
+      "n_job_units": 788
+    },
+    {
+      "comparison": "hybrid - tfidf",
+      "metric": "map",
+      "mean_diff": 0.033211,
+      "std_diff": 0.024241,
+      "min_diff": 0.005204,
+      "max_diff": 0.065052,
+      "reps_positive": 5,
+      "n_repetitions": 5,
+      "ci95_low": 0.017936,
+      "ci95_high": 0.048003,
+      "ci_excludes_0": true,
+      "n_job_units": 788
+    },
+    {
+      "comparison": "semantic - tfidf",
+      "metric": "ndcg@10",
+      "mean_diff": 0.012971,
+      "std_diff": 0.018553,
+      "min_diff": -0.01052,
+      "max_diff": 0.040187,
+      "reps_positive": 4,
+      "n_repetitions": 5,
+      "ci95_low": 0.001641,
+      "ci95_high": 0.024207,
+      "ci_excludes_0": true,
+      "n_job_units": 809
+    },
+    {
+      "comparison": "semantic - tfidf",
+      "metric": "ndcg@5",
+      "mean_diff": 0.015956,
+      "std_diff": 0.021848,
+      "min_diff": -0.006883,
+      "max_diff": 0.04714,
+      "reps_positive": 4,
+      "n_repetitions": 5,
+      "ci95_low": 0.002241,
+      "ci95_high": 0.029333,
+      "ci_excludes_0": true,
+      "n_job_units": 809
+    },
+    {
+      "comparison": "semantic - tfidf",
+      "metric": "mrr",
+      "mean_diff": 0.017759,
+      "std_diff": 0.021065,
+      "min_diff": -0.004667,
+      "max_diff": 0.050823,
+      "reps_positive": 4,
+      "n_repetitions": 5,
+      "ci95_low": -0.002557,
+      "ci95_high": 0.038586,
+      "ci_excludes_0": false,
+      "n_job_units": 788
+    },
+    {
+      "comparison": "semantic - tfidf",
+      "metric": "map",
+      "mean_diff": 0.021019,
+      "std_diff": 0.024828,
+      "min_diff": -0.005854,
+      "max_diff": 0.058405,
+      "reps_positive": 4,
+      "n_repetitions": 5,
+      "ci95_low": 0.006157,
+      "ci95_high": 0.035821,
+      "ci_excludes_0": true,
+      "n_job_units": 788
+    }
+  ],
+  "explainability_check": {
+    "config": "hybrid",
+    "pairs_checked": 1191,
+    "passed": {
+      "missing_absent": 1191,
+      "matched_present": 1191,
+      "matched_plus_missing_complete": 1191,
+      "experience_gap": 1191,
+      "responsibility_evidence_in_text": 1191,
+      "skill_evidence_in_text": 1191,
+      "score_recomposes": 1191,
+      "score_matches_saved": 1191
+    },
+    "all_checks_pass_for_all_pairs": true
+  },
+  "privacy_check": {
+    "files_scanned": 47,
+    "findings": [],
+    "images_for_manual_review": [
+      "results\\figures\\hybrid_ablation_ndcg10.png",
+      "results\\figures\\macro_f1_by_model.png",
+      "results\\figures\\mrr_by_model.png",
+      "results\\figures\\ndcg10_by_model.png",
+      "results\\figures\\repeated_ndcg10_distribution.png",
+      "results\\figures\\repeated_paired_differences.png"
+    ],
+    "passed": true
+  },
+  "error_analysis_summary": [
+    {
+      "category": "A_tfidf_ok_bge_fails",
+      "jobs": 17,
+      "share_of_binary_eligible_jobs": 0.1104,
+      "tag_missing_required_skill": 11,
+      "tag_semantic_similarity_despite_missing_requirement": 11,
+      "tag_responsibility_mismatch": 5,
+      "tag_terminology_mismatch": 5,
+      "tag_experience_mismatch": 9,
+      "tag_generic_job_boilerplate": 10,
+      "tag_insufficient_requirement_or_candidate_evidence": 9
+    },
+    {
+      "category": "B_bge_ok_tfidf_fails",
+      "jobs": 25,
+      "share_of_binary_eligible_jobs": 0.1623,
+      "tag_missing_required_skill": 18,
+      "tag_semantic_similarity_despite_missing_requirement": 7,
+      "tag_responsibility_mismatch": 14,
+      "tag_terminology_mismatch": 16,
+      "tag_experience_mismatch": 18,
+      "tag_generic_job_boilerplate": 8,
+      "tag_insufficient_requirement_or_candidate_evidence": 9
+    },
+    {
+      "category": "C_hybrid_ok_bge_fails",
+      "jobs": 14,
+      "share_of_binary_eligible_jobs": 0.0909,
+      "tag_missing_required_skill": 13,
+      "tag_semantic_similarity_despite_missing_requirement": 13,
+      "tag_responsibility_mismatch": 5,
+      "tag_terminology_mismatch": 3,
+      "tag_experience_mismatch": 6,
+      "tag_generic_job_boilerplate": 7,
+      "tag_insufficient_requirement_or_candidate_evidence": 8
+    },
+    {
+      "category": "D_bge_ok_hybrid_fails",
+      "jobs": 6,
+      "share_of_binary_eligible_jobs": 0.039,
+      "tag_missing_required_skill": 4,
+      "tag_semantic_similarity_despite_missing_requirement": 4,
+      "tag_responsibility_mismatch": 2,
+      "tag_terminology_mismatch": 4,
+      "tag_experience_mismatch": 5,
+      "tag_generic_job_boilerplate": 3,
+      "tag_insufficient_requirement_or_candidate_evidence": 2
+    },
+    {
+      "category": "E_all_fail",
+      "jobs": 30,
+      "share_of_binary_eligible_jobs": 0.1948,
+      "tag_missing_required_skill": 24,
+      "tag_semantic_similarity_despite_missing_requirement": 24,
+      "tag_responsibility_mismatch": 19,
+      "tag_terminology_mismatch": 8,
+      "tag_experience_mismatch": 16,
+      "tag_generic_job_boilerplate": 20,
+      "tag_insufficient_requirement_or_candidate_evidence": 15
+    }
+  ],
+  "comparison": [
+    {
+      "model": "random",
+      "validation_mrr": 0.72263,
+      "validation_map": 0.678111,
+      "validation_ndcg@5": 0.699813,
+      "validation_ndcg@10": 0.767404,
+      "validation_p@1": 0.521801,
+      "validation_p@5": 0.521176,
+      "test_mrr": 0.714063,
+      "test_map": 0.66702,
+      "test_ndcg@5": 0.69442,
+      "test_ndcg@10": 0.758163,
+      "test_p@1": 0.51211,
+      "test_p@5": 0.511634,
+      "repeated_mean_mrr": 0.726512,
+      "repeated_std_mrr": 0.007022,
+      "repeated_mean_map": 0.683794,
+      "repeated_std_map": 0.007608,
+      "repeated_mean_ndcg@5": 0.707072,
+      "repeated_std_ndcg@5": 0.019686,
+      "repeated_mean_ndcg@10": 0.773181,
+      "repeated_std_ndcg@10": 0.007745,
+      "repeated_mean_p@1": 0.529783,
+      "repeated_std_p@1": 0.009261,
+      "repeated_mean_p@5": 0.529415,
+      "repeated_std_p@5": 0.009137,
+      "validation_accuracy": null,
+      "validation_macro_precision": null,
+      "validation_macro_recall": null,
+      "validation_macro_f1": null,
+      "test_accuracy": null,
+      "test_macro_precision": null,
+      "test_macro_recall": null,
+      "test_macro_f1": null,
+      "repeated_mean_accuracy": null,
+      "repeated_std_accuracy": null,
+      "repeated_mean_macro_f1": null,
+      "repeated_std_macro_f1": null
+    },
+    {
+      "model": "tfidf",
+      "validation_mrr": 0.753224,
+      "validation_map": 0.718162,
+      "validation_ndcg@5": 0.730813,
+      "validation_ndcg@10": 0.793422,
+      "validation_p@1": 0.57764,
+      "validation_p@5": 0.531573,
+      "test_mrr": 0.763806,
+      "test_map": 0.717905,
+      "test_ndcg@5": 0.724894,
+      "test_ndcg@10": 0.794462,
+      "test_p@1": 0.597403,
+      "test_p@5": 0.5079,
+      "repeated_mean_mrr": 0.788782,
+      "repeated_std_mrr": 0.015172,
+      "repeated_mean_map": 0.749868,
+      "repeated_std_map": 0.020064,
+      "repeated_mean_ndcg@5": 0.76039,
+      "repeated_std_ndcg@5": 0.01587,
+      "repeated_mean_ndcg@10": 0.819195,
+      "repeated_std_ndcg@10": 0.012744,
+      "repeated_mean_p@1": 0.637817,
+      "repeated_std_p@1": 0.035441,
+      "repeated_mean_p@5": 0.545892,
+      "repeated_std_p@5": 0.007428,
+      "validation_accuracy": 0.460683,
+      "validation_macro_precision": 0.401177,
+      "validation_macro_recall": 0.40525,
+      "validation_macro_f1": 0.401956,
+      "test_accuracy": 0.435768,
+      "test_macro_precision": 0.403913,
+      "test_macro_recall": 0.413972,
+      "test_macro_f1": 0.3938,
+      "repeated_mean_accuracy": 0.44012,
+      "repeated_std_accuracy": 0.020763,
+      "repeated_mean_macro_f1": 0.405177,
+      "repeated_std_macro_f1": 0.009795
+    },
+    {
+      "model": "semantic",
+      "validation_mrr": 0.772925,
+      "validation_map": 0.740605,
+      "validation_ndcg@5": 0.752354,
+      "validation_ndcg@10": 0.811439,
+      "validation_p@1": 0.602484,
+      "validation_p@5": 0.54648,
+      "test_mrr": 0.787013,
+      "test_map": 0.753078,
+      "test_ndcg@5": 0.765258,
+      "test_ndcg@10": 0.823101,
+      "test_p@1": 0.649351,
+      "test_p@5": 0.533874,
+      "repeated_mean_mrr": 0.806541,
+      "repeated_std_mrr": 0.027441,
+      "repeated_mean_map": 0.770887,
+      "repeated_std_map": 0.032324,
+      "repeated_mean_ndcg@5": 0.776347,
+      "repeated_std_ndcg@5": 0.033847,
+      "repeated_mean_ndcg@10": 0.832166,
+      "repeated_std_ndcg@10": 0.023807,
+      "repeated_mean_p@1": 0.678349,
+      "repeated_std_p@1": 0.044721,
+      "repeated_mean_p@5": 0.549481,
+      "repeated_std_p@5": 0.010728,
+      "validation_accuracy": 0.479746,
+      "validation_macro_precision": 0.414342,
+      "validation_macro_recall": 0.413252,
+      "validation_macro_f1": 0.413344,
+      "test_accuracy": 0.47691,
+      "test_macro_precision": 0.427379,
+      "test_macro_recall": 0.43749,
+      "test_macro_f1": 0.422564,
+      "repeated_mean_accuracy": 0.460654,
+      "repeated_std_accuracy": 0.020866,
+      "repeated_mean_macro_f1": 0.412157,
+      "repeated_std_macro_f1": 0.014178
+    },
+    {
+      "model": "hybrid",
+      "validation_mrr": 0.770544,
+      "validation_map": 0.739296,
+      "validation_ndcg@5": 0.748974,
+      "validation_ndcg@10": 0.808537,
+      "validation_p@1": 0.602484,
+      "validation_p@5": 0.54648,
+      "test_mrr": 0.834091,
+      "test_map": 0.784801,
+      "test_ndcg@5": 0.799712,
+      "test_ndcg@10": 0.845891,
+      "test_p@1": 0.701299,
+      "test_p@5": 0.550758,
+      "repeated_mean_mrr": null,
+      "repeated_std_mrr": null,
+      "repeated_mean_map": null,
+      "repeated_std_map": null,
+      "repeated_mean_ndcg@5": null,
+      "repeated_std_ndcg@5": null,
+      "repeated_mean_ndcg@10": null,
+      "repeated_std_ndcg@10": null,
+      "repeated_mean_p@1": null,
+      "repeated_std_p@1": null,
+      "repeated_mean_p@5": null,
+      "repeated_std_p@5": null,
+      "validation_accuracy": 0.49722,
+      "validation_macro_precision": 0.43583,
+      "validation_macro_recall": 0.428575,
+      "validation_macro_f1": 0.424006,
+      "test_accuracy": 0.511335,
+      "test_macro_precision": 0.442667,
+      "test_macro_recall": 0.438139,
+      "test_macro_f1": 0.438562,
+      "repeated_mean_accuracy": null,
+      "repeated_std_accuracy": null,
+      "repeated_mean_macro_f1": null,
+      "repeated_std_macro_f1": null
+    },
+    {
+      "model": "hybrid_parserfix",
+      "validation_mrr": 0.770544,
+      "validation_map": 0.740324,
+      "validation_ndcg@5": 0.750399,
+      "validation_ndcg@10": 0.809293,
+      "validation_p@1": 0.602484,
+      "validation_p@5": 0.547723,
+      "test_mrr": 0.827597,
+      "test_map": 0.780303,
+      "test_ndcg@5": 0.794804,
+      "test_ndcg@10": 0.841898,
+      "test_p@1": 0.688312,
+      "test_p@5": 0.549459,
+      "repeated_mean_mrr": 0.823746,
+      "repeated_std_mrr": 0.025373,
+      "repeated_mean_map": 0.783079,
+      "repeated_std_map": 0.028595,
+      "repeated_mean_ndcg@5": 0.788944,
+      "repeated_std_ndcg@5": 0.034961,
+      "repeated_mean_ndcg@10": 0.842549,
+      "repeated_std_ndcg@10": 0.021693,
+      "repeated_mean_p@1": 0.702406,
+      "repeated_std_p@1": 0.041235,
+      "repeated_mean_p@5": 0.554154,
+      "repeated_std_p@5": 0.008301,
+      "validation_accuracy": 0.498809,
+      "validation_macro_precision": 0.437432,
+      "validation_macro_recall": 0.430429,
+      "validation_macro_f1": 0.425725,
+      "test_accuracy": 0.511335,
+      "test_macro_precision": 0.442419,
+      "test_macro_recall": 0.438139,
+      "test_macro_f1": 0.438512,
+      "repeated_mean_accuracy": 0.46442,
+      "repeated_std_accuracy": 0.020038,
+      "repeated_mean_macro_f1": 0.406247,
+      "repeated_std_macro_f1": 0.023428
+    }
+  ],
+  "figures": [
+    "results/figures/hybrid_ablation_ndcg10.png",
+    "results/figures/macro_f1_by_model.png",
+    "results/figures/mrr_by_model.png",
+    "results/figures/ndcg10_by_model.png",
+    "results/figures/repeated_ndcg10_distribution.png",
+    "results/figures/repeated_paired_differences.png"
+  ],
+  "notes": [
+    "Scores are similarities, not probabilities.",
+    "Ranking metrics are primary; classification metrics are secondary.",
+    "Repeated-split hybrid uses the Phase 6 parser fix and re-selects weights per repetition."
+  ]
+}

@@ -1,0 +1,6 @@
+category,jobs,share_of_binary_eligible_jobs,tag_missing_required_skill,tag_semantic_similarity_despite_missing_requirement,tag_responsibility_mismatch,tag_terminology_mismatch,tag_experience_mismatch,tag_generic_job_boilerplate,tag_insufficient_requirement_or_candidate_evidence
+A_tfidf_ok_bge_fails,17,0.1104,11,11,5,5,9,10,9
+B_bge_ok_tfidf_fails,25,0.1623,18,7,14,16,18,8,9
+C_hybrid_ok_bge_fails,14,0.0909,13,13,5,3,6,7,8
+D_bge_ok_hybrid_fails,6,0.039,4,4,2,4,5,3,2
+E_all_fail,30,0.1948,24,24,19,8,16,20,15

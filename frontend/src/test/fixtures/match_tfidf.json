@@ -1,0 +1,60 @@
+{
+ "model": "tfidf",
+ "score": 0.162844,
+ "category": "Strong match",
+ "thresholds": [
+  0.036226,
+  0.045507
+ ],
+ "validation_percentile": 100.0,
+ "components": {
+  "tfidf_similarity": 0.162844
+ },
+ "explanation": {
+  "summary": "Cosine similarity of TF-IDF word vectors: how much rare vocabulary the two texts share.",
+  "top_shared_terms": [
+   {
+    "term": "statistics",
+    "contribution": 0.02375
+   },
+   {
+    "term": "and python",
+    "contribution": 0.021929
+   },
+   {
+    "term": "python scripts",
+    "contribution": 0.015875
+   },
+   {
+    "term": "python",
+    "contribution": 0.015198
+   },
+   {
+    "term": "tableau",
+    "contribution": 0.013421
+   },
+   {
+    "term": "data analyst",
+    "contribution": 0.009946
+   },
+   {
+    "term": "sql and",
+    "contribution": 0.007437
+   },
+   {
+    "term": "findings",
+    "contribution": 0.007138
+   },
+   {
+    "term": "dashboards",
+    "contribution": 0.006955
+   },
+   {
+    "term": "sql",
+    "contribution": 0.006765
+   }
+  ],
+  "limitations": "Lexical only: synonyms and paraphrases do not count, and it cannot tell required from optional skills."
+ },
+ "disclaimer": "This system is an academic research prototype and should not be used as the sole basis for employment decisions."
+}

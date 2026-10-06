@@ -1,0 +1,18 @@
+Senior Data Analyst
+
+Responsibilities
+Build and maintain dashboards that track sales and operational performance.
+Write SQL queries and Python scripts to prepare data for analysis.
+Present findings and recommendations to business leaders.
+Partner with engineering to improve data quality.
+
+Required Qualifications
+5+ years of experience in data analysis.
+Strong SQL and Python skills.
+Experience with Tableau or Power BI.
+Must have AWS experience.
+Bachelor's degree in Statistics, Mathematics or a related field.
+
+Preferred Qualifications
+Experience with Airflow and Snowflake is a plus.
+Knowledge of statistics and A/B testing.

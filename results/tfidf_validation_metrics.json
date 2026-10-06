@@ -1,0 +1,96 @@
+{
+  "model": "tfidf",
+  "split": "validation",
+  "pairs_scored": 1259,
+  "model_params": {
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 2,
+    "max_df": 0.95,
+    "sublinear_tf": true,
+    "token_pattern": "(?u)\\b\\w[\\w+#.]*[\\w+#]|\\b\\w\\b",
+    "vocabulary_size": 68545,
+    "fit_corpus": "unique train resumes + unique train job descriptions"
+  },
+  "ranking": {
+    "jobs_total": 302,
+    "jobs_eligible": 163,
+    "jobs_excluded": {
+      "single_candidate": 73,
+      "single_label": 66
+    },
+    "jobs_binary_eligible": 161,
+    "jobs_binary_trivial": 2,
+    "mrr": 0.753224,
+    "map": 0.718162,
+    "ndcg@5": 0.730813,
+    "ndcg@10": 0.793422,
+    "p@1": 0.57764,
+    "p@5": 0.531573
+  },
+  "classification": {
+    "thresholds": [
+      0.03622587443923308,
+      0.0455066244076344
+    ],
+    "threshold_source": "validation (macro-F1 grid over score percentiles)",
+    "accuracy": 0.460683,
+    "macro_precision": 0.401177,
+    "macro_recall": 0.40525,
+    "macro_f1": 0.401956,
+    "confusion_matrix": {
+      "labels": [
+        "No Fit",
+        "Potential Fit",
+        "Good Fit"
+      ],
+      "matrix": [
+        [
+          362,
+          108,
+          170
+        ],
+        [
+          118,
+          46,
+          86
+        ],
+        [
+          137,
+          60,
+          172
+        ]
+      ]
+    }
+  },
+  "chance_reference": {
+    "random_ranking": {
+      "n_shuffles": 200,
+      "seed": 42,
+      "mrr": 0.72263,
+      "map": 0.678111,
+      "ndcg@5": 0.699813,
+      "ndcg@10": 0.767404,
+      "p@1": 0.521801,
+      "p@5": 0.521176
+    },
+    "always_no_fit": {
+      "accuracy": 0.50834,
+      "macro_precision": 0.169447,
+      "macro_recall": 0.333333,
+      "macro_f1": 0.22468
+    }
+  },
+  "relevance": {
+    "graded": "No Fit=0, Potential Fit=1, Good Fit=2 (NDCG)",
+    "binary": "relevant = label > 0 (MRR, MAP, P@k)"
+  },
+  "dataset": {
+    "name": "cnamuangtoun/resume-job-description-fit",
+    "revision": "08978e21714984bb417547d2c0f9b477f5298163",
+    "seed": 42,
+    "split_sha256": "9e2c7aa0497031ad840b74de9ad8691c11781ef4cddb0cdda9d00b80000a6f04"
+  }
+}

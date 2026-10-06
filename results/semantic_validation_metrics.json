@@ -1,0 +1,107 @@
+{
+  "model": "semantic",
+  "split": "validation",
+  "pairs_scored": 1259,
+  "model_params": {
+    "model_name": "BAAI/bge-base-en-v1.5",
+    "revision": "a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+    "device": "cpu",
+    "batch_size": 16,
+    "max_seq_length": 512,
+    "long_text": "truncate",
+    "query_instruction": null,
+    "embedding_dim": 768,
+    "normalized_embeddings": true,
+    "fine_tuned": false,
+    "cache_file": "semantic_2b3faa5743f6.npz",
+    "encoding_stats": {
+      "texts_requested": 2518,
+      "texts_encoded": 0,
+      "chunks_encoded": 0,
+      "reused_cached": 2518
+    },
+    "versions": {
+      "sentence_transformers": "6.1.0",
+      "torch": "2.14.1+cpu"
+    }
+  },
+  "ranking": {
+    "jobs_total": 302,
+    "jobs_eligible": 163,
+    "jobs_excluded": {
+      "single_candidate": 73,
+      "single_label": 66
+    },
+    "jobs_binary_eligible": 161,
+    "jobs_binary_trivial": 2,
+    "mrr": 0.772925,
+    "map": 0.740605,
+    "ndcg@5": 0.752354,
+    "ndcg@10": 0.811439,
+    "p@1": 0.602484,
+    "p@5": 0.54648
+  },
+  "classification": {
+    "thresholds": [
+      0.629076560955637,
+      0.6611582553057619
+    ],
+    "threshold_source": "validation (macro-F1 grid over score percentiles)",
+    "accuracy": 0.479746,
+    "macro_precision": 0.414342,
+    "macro_recall": 0.413252,
+    "macro_f1": 0.413344,
+    "confusion_matrix": {
+      "labels": [
+        "No Fit",
+        "Potential Fit",
+        "Good Fit"
+      ],
+      "matrix": [
+        [
+          409,
+          105,
+          126
+        ],
+        [
+          106,
+          56,
+          88
+        ],
+        [
+          165,
+          65,
+          139
+        ]
+      ]
+    }
+  },
+  "chance_reference": {
+    "random_ranking": {
+      "n_shuffles": 200,
+      "seed": 42,
+      "mrr": 0.72263,
+      "map": 0.678111,
+      "ndcg@5": 0.699813,
+      "ndcg@10": 0.767404,
+      "p@1": 0.521801,
+      "p@5": 0.521176
+    },
+    "always_no_fit": {
+      "accuracy": 0.50834,
+      "macro_precision": 0.169447,
+      "macro_recall": 0.333333,
+      "macro_f1": 0.22468
+    }
+  },
+  "relevance": {
+    "graded": "No Fit=0, Potential Fit=1, Good Fit=2 (NDCG)",
+    "binary": "relevant = label > 0 (MRR, MAP, P@k)"
+  },
+  "dataset": {
+    "name": "cnamuangtoun/resume-job-description-fit",
+    "revision": "08978e21714984bb417547d2c0f9b477f5298163",
+    "seed": 42,
+    "split_sha256": "9e2c7aa0497031ad840b74de9ad8691c11781ef4cddb0cdda9d00b80000a6f04"
+  }
+}

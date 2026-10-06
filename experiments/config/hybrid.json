@@ -1,0 +1,25 @@
+{
+  "model": "hybrid",
+  "semantic_config": "semantic",
+  "weights_file": "config/matching_weights.json",
+  "preferred_alpha": 0.5,
+  "glued_cues": false,
+  "selection_metric": "ndcg@10",
+  "scaler_percentiles": [1, 99],
+  "initial_weights": "A_initial",
+  "candidate_weights": {
+    "A_initial":              {"semantic_similarity": 0.40, "required_skill_coverage": 0.25, "preferred_skill_coverage": 0.10, "experience_match": 0.10, "responsibility_similarity": 0.15},
+    "B_semantic_heavy":       {"semantic_similarity": 0.60, "required_skill_coverage": 0.15, "preferred_skill_coverage": 0.05, "experience_match": 0.10, "responsibility_similarity": 0.10},
+    "C_balanced":             {"semantic_similarity": 0.25, "required_skill_coverage": 0.25, "preferred_skill_coverage": 0.10, "experience_match": 0.15, "responsibility_similarity": 0.25},
+    "D_skill_heavy":          {"semantic_similarity": 0.30, "required_skill_coverage": 0.40, "preferred_skill_coverage": 0.15, "experience_match": 0.05, "responsibility_similarity": 0.10},
+    "E_experience_heavy":     {"semantic_similarity": 0.30, "required_skill_coverage": 0.20, "preferred_skill_coverage": 0.10, "experience_match": 0.30, "responsibility_similarity": 0.10},
+    "F_responsibility_heavy": {"semantic_similarity": 0.30, "required_skill_coverage": 0.20, "preferred_skill_coverage": 0.05, "experience_match": 0.10, "responsibility_similarity": 0.35}
+  },
+  "ablation": {
+    "A_semantic_only":            ["semantic_similarity"],
+    "B_+required_skills":         ["semantic_similarity", "required_skill_coverage"],
+    "C_+preferred_skills":        ["semantic_similarity", "required_skill_coverage", "preferred_skill_coverage"],
+    "D_+experience":              ["semantic_similarity", "required_skill_coverage", "preferred_skill_coverage", "experience_match"],
+    "E_+responsibilities":        ["semantic_similarity", "required_skill_coverage", "preferred_skill_coverage", "experience_match", "responsibility_similarity"]
+  }
+}

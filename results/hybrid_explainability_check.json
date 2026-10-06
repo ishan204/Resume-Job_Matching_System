@@ -1,0 +1,15 @@
+{
+  "config": "hybrid",
+  "pairs_checked": 1191,
+  "passed": {
+    "missing_absent": 1191,
+    "matched_present": 1191,
+    "matched_plus_missing_complete": 1191,
+    "experience_gap": 1191,
+    "responsibility_evidence_in_text": 1191,
+    "skill_evidence_in_text": 1191,
+    "score_recomposes": 1191,
+    "score_matches_saved": 1191
+  },
+  "all_checks_pass_for_all_pairs": true
+}

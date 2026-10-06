@@ -1,0 +1,6 @@
+repetition,selected,semantic_similarity,required_skill_coverage,preferred_skill_coverage,experience_match,responsibility_similarity,scaler_semantic_similarity,scaler_responsibility_similarity
+0,E_experience_heavy,0.3,0.2,0.1,0.3,0.1,"[0.488017, 0.75533]","[0.452416, 0.710543]"
+1,E_experience_heavy,0.3,0.2,0.1,0.3,0.1,"[0.477318, 0.762654]","[0.458627, 0.716379]"
+2,E_experience_heavy,0.3,0.2,0.1,0.3,0.1,"[0.480243, 0.763712]","[0.455301, 0.734876]"
+3,B_semantic_heavy,0.6,0.15,0.05,0.1,0.1,"[0.49658, 0.773447]","[0.459858, 0.714908]"
+4,D_skill_heavy,0.3,0.4,0.15,0.05,0.1,"[0.486712, 0.764893]","[0.469114, 0.711742]"
