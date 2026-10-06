@@ -37,7 +37,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const err = (body as { error?: { code?: string; message?: string } } | null)?.error;
     if (!err && res.status >= 500) {
       // No API error body: the request never reached FastAPI (e.g. the dev proxy could not connect).
-      throw new ApiError("UNREACHABLE", "The analysis server is not responding. It may still be starting (loading models takes about 10–30 s); try again shortly.", res.status);
+      throw new ApiError("UNREACHABLE", "The analysis server is not responding. Start it with `uvicorn backend.app.main:app --port 8000` (loading models takes about 10–30 s), then try again.", res.status);
     }
     throw new ApiError(err?.code ?? `HTTP_${res.status}`, friendly(err?.code, err?.message, res.status), res.status);
   }
