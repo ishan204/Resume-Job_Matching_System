@@ -1,0 +1,15 @@
+{
+  "name": "resumematch-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter resumematch-server dev\" \"pnpm --filter resumematch-client dev\"",
+    "build": "pnpm --filter resumematch-server build && pnpm --filter resumematch-client build",
+    "test": "pnpm --filter resumematch-server test",
+    "db:push": "pnpm --filter resumematch-server db:push",
+    "db:seed": "pnpm --filter resumematch-server db:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

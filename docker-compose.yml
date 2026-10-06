@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (Production mode; SQLite is used locally out-of-the-box)
+  postgres:
+    image: postgres:16-alpine
+    container_name: resumematch-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: resumematch
+      POSTGRES_PASSWORD: resumepassword123
+      POSTGRES_DB: resumematch_prod
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resumematch -d resumematch_prod"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ResumeMatch AI Backend API
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: resumematch-api
+    restart: unless-stopped
+    environment:
+      PORT: 5000
+      NODE_ENV: production
+      DATABASE_URL: "file:/app/server/prisma/prod.db" # Or "postgresql://resumematch:resumepassword123@postgres:5432/resumematch_prod"
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      UPLOAD_DIR: "/app/server/uploads"
+    ports:
+      - "5000:5000"
+    volumes:
+      - server_uploads:/app/server/uploads
+      - server_db:/app/server/prisma
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ResumeMatch AI Frontend Web UI
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    container_name: resumematch-web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+
+volumes:
+  postgres_data:
+  server_uploads:
+  server_db:
