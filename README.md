@@ -66,6 +66,17 @@ python -m ml.evaluation.significance tfidf semantic hybrid
 | 4 Semantic baseline (BGE) | done — test NDCG@10 0.8231, MRR 0.7870, macro F1 0.4226 |
 | 5 Skill-Aware Hybrid (student innovation) | done — test NDCG@10 0.8459, MRR 0.8341, macro F1 0.4386; gain over BGE significant on test but not replicated on validation |
 | 6 Evaluation & robustness | done — across 5 repeated grouped splits hybrid > BGE in 5/5 (NDCG@10 +0.010, 95% CI [+0.002, +0.019]); see [docs/evaluation.md](docs/evaluation.md) |
-| 7–13 | pending |
+| 7 FastAPI backend | done — `uvicorn backend.app.main:app --reload`; contract in [docs/api.md](docs/api.md) |
+| 8– | frontend: pending |
 
 Results are added here only after experiments are actually run.
+
+## Backend API
+
+```bash
+uvicorn backend.app.main:app --reload
+```
+
+Open http://127.0.0.1:8000/docs. Endpoints, examples and error formats are in [docs/api.md](docs/api.md).
+The API serves the frozen research models (TF-IDF, BGE, Skill-Aware Hybrid) and reads the committed
+research results. It never re-runs experiments.

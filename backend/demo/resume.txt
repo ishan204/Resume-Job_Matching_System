@@ -1,0 +1,25 @@
+Summary
+Data analyst with experience turning business questions into reporting and analysis.
+
+Skills
+Python, SQL, Pandas, Tableau, Microsoft Excel, Statistics, Git
+
+Experience
+Data Analyst, Northwind Retail, 03/2019 to 06/2023
+Built weekly SQL and Python reports for the sales leadership team.
+Created Tableau dashboards that track revenue, returns and inventory across 40 stores.
+Cleaned and joined data from three source systems using Pandas.
+Presented monthly findings to managers and recommended changes to pricing.
+
+Junior Analyst, Contoso Logistics, 01/2017 to 02/2019
+Maintained Excel models for delivery costs and prepared variance analysis.
+Automated a manual reconciliation process with Python scripts.
+
+Projects
+Customer churn analysis using logistic regression in Python and scikit-learn.
+
+Education
+Bachelor of Science in Statistics, Lakeside State University, 2016
+
+Certifications
+Tableau Desktop Specialist

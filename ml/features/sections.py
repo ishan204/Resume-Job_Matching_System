@@ -38,8 +38,13 @@ RESUME_HEADINGS = {
     "experience": r"(?:work |professional |relevant |employment |career )?experience|"
                   r"work history|employment history|career history|employment",
     "education": r"education(?: and training)?|academic background|academics",
+    # "projects" and "certifications?" were part of "other"; they get their own labels (same phrases,
+    # nothing added) only so the API can list them. Headings found are identical and every feature
+    # treats these labels like "other", so Phase 5/6 features are unchanged (verified).
+    "projects": r"projects",
+    "certifications": r"certifications?",
     "other": r"skills|technical skills|highlights|summary|professional summary|executive summary|"
-             r"core competencies|certifications?|accomplishments|projects|interests|"
+             r"core competencies|accomplishments|interests|"
              r"additional information|languages|affiliations|activities|awards|objective|profile",
 }
 

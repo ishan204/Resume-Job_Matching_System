@@ -27,7 +27,7 @@ Research inspiration: [ConFit v2](https://github.com/jasonyux/ConFit-v2) — a r
 │   ├── models/                # tfidf.py, semantic.py, hybrid.py     (Phases 3–5)
 │   └── evaluation/            # metrics, leakage_check, experiment protocol (Phases 2–3, 6–7)
 ├── artifacts/                 # tfidf.joblib, cache/ of BGE embeddings (git-ignored)
-├── backend/                   # FastAPI app                            (Phase 8)
+├── backend/                   # FastAPI app (Phase 7): backend/app/*.py, synthetic demo fixture
 ├── frontend/                  # React + TypeScript + Tailwind + Recharts (Phase 9)
 ├── experiments/config/        # frozen config of every experiment run
 ├── results/                   # CSVs + PNGs produced by experiments (committed)
@@ -146,12 +146,9 @@ If the hybrid loses, we report it and analyse why.
 | 4 ✅ | BGE semantic baseline | semantic baseline |
 | 5 ✅ | Parsers, skills/experience/education features, hybrid | hybrid model |
 | 6 ✅ | Final evaluation, robustness (repeated grouped splits), statistics, error analysis | evaluation |
-| 7 | Weight + ablation experiments (validation) | experiments |
-| 8 | FastAPI backend | backend API |
-| 9 | Functional React frontend | frontend |
-| 10 | Final test-set experiments + repeated grouped splits (cross-validation) to check whether the hybrid gain replicates | experiments |
-| 11 | Research/results page populated | frontend |
-| 12 | Frontend polish | frontend |
+| 7 ✅ | FastAPI backend serving the frozen models (weights/ablation experiments were completed in Phases 5–6) | backend API |
+| 8 | Functional React frontend | frontend |
+| 9–12 | Results page, polish (final experiments already done in Phase 6) | frontend |
 | 13 | Optional cross-encoder | optional |
 
 After each phase: run tests → inspect → fix → document → commit. No phase starts on a broken one.
